@@ -43,9 +43,8 @@ integration-test:
     - psql -U postgres -h postgres -c 'CREATE DATABASE molescrape'
     - bash molescrape-database/postgres/create_tables.sh postgres molescrape postgres
     # Setup skyscraper
-    - pip install -r requirements.txt
     - pip install -U grpcio  # trouble with grpcio version
-    - pip install -e .
+    - pip install -e .[aws,mqtt,redis]
     # Setup integration test environment
     - cp integration-tests/dotenv .env
     - echo 'AWS_ACCESS_KEY='$SKYSCRAPER_TESTING_ACCESS_KEY_ID >> .env
