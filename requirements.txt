@@ -1,0 +1,10 @@
+python-dotenv
+scrapy
+psycopg2-binary
+click
+pandas
+
+# extras
+boto3
+paho-mqtt
+redis

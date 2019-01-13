@@ -43,6 +43,7 @@ integration-test:
     - psql -U postgres -h postgres -c 'CREATE DATABASE molescrape'
     - bash molescrape-database/postgres/create_tables.sh postgres molescrape postgres
     # Setup skyscraper
+    - pip install -r requirements.txt
     - pip install -U grpcio  # trouble with grpcio version
     - pip install -e .[aws,mqtt,redis]
     # Setup integration test environment
