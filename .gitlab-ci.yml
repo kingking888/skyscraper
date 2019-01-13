@@ -1,0 +1,91 @@
+image: python:3.7
+
+stages:
+  - test
+  - integration-test
+  - sonarqube
+
+variables:
+  AWS_DEFAULT_REGION: us-east-1
+
+test:
+  stage: test
+  before_script:
+    # Setup requirements
+    - apt-get update -y && apt-get install -y postgresql-client
+    - python -V
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    # Setup the SQL database
+    - git clone https://github.com/molescrape/molescrape-database.git
+    - psql -U postgres -h postgres -c 'CREATE DATABASE molescrape'
+    - bash molescrape-database/postgres/create_tables.sh postgres molescrape postgres
+    - export SKYSCRAPER_UNITTEST_CONNSTRING='host=postgres user=postgres dbname=molescrape'
+  script:
+    - pip install tox
+    - tox
+  services:
+    - name: postgres
+      alias: postgres
+
+integration-test:
+  stage: integration-test
+  before_script:
+    # Setup requirements
+    - apt-get update -y && apt-get install -y postgresql-client awscli bats
+    - python -V
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    # Setup the SQL database
+    - git clone https://github.com/molescrape/molescrape-database.git
+    - psql -U postgres -h postgres -c 'CREATE DATABASE molescrape'
+    - bash molescrape-database/postgres/create_tables.sh postgres molescrape postgres
+    # Setup skyscraper
+    - pip install -r requirements.txt
+    - pip install -U grpcio  # trouble with grpcio version
+    - pip install -e .
+    # Setup integration test environment
+    - cp integration-tests/dotenv .env
+    - echo 'AWS_ACCESS_KEY='$SKYSCRAPER_TESTING_ACCESS_KEY_ID >> .env
+    - echo 'AWS_SECRET_ACCESS_KEY='$SKYSCRAPER_TESTING_SECRET_ACCESS_KEY >> .env
+    - cat .env
+    - mkdir $HOME/.aws
+    - echo -e "[default]\naws_access_key_id = $SKYSCRAPER_TESTING_ACCESS_KEY_ID\naws_secret_access_key = $SKYSCRAPER_TESTING_SECRET_ACCESS_KEY\n" > $HOME/.aws/credentials
+  script:
+    - bats integration-tests/
+  services:
+    - name: postgres
+      alias: postgres
+
+sonarqube:
+  stage: sonarqube
+  before_script:
+    - apt-get -y update
+    - apt-get -y install unzip
+    - apt-get -y install pylint
+    - apt-get -y install postgresql-client
+    # Setup the SQL database
+    - git clone https://github.com/molescrape/molescrape-database.git
+    - psql -U postgres -h postgres -c 'CREATE DATABASE molescrape'
+    - bash molescrape-database/postgres/create_tables.sh postgres molescrape postgres
+    - export SKYSCRAPER_UNITTEST_CONNSTRING='host=postgres user=postgres dbname=molescrape'
+    # Execute coverage analysis
+    - python -V
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install tox
+    - tox
+    # Download sonar-scanner
+    - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip
+    - unzip sonar-scanner-cli-3.2.0.1227-linux.zip
+  script:
+    - "pylint $(find ./skyscraper -iname \"*.py\" -print) -r n --msg-template=\"{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}\" > pylint-report.txt || true"
+    - sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.login=$SONAR_LOGIN
+  only:
+    - master
+  services:
+    - name: postgres
+      alias: postgres

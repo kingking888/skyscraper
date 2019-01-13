@@ -1,3 +1,7 @@
+skyscraper/spiders/*.py
+!skyscraper/spiders/__init__.py
+!skyscraper/spiders/example.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
