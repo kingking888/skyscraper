@@ -31,34 +31,34 @@ ITEM_PIPELINES = {}
 
 if os.environ.get('PIPELINE_USE_DUPLICATESFILTER_DYNAMODB') \
         and int(os.environ.get('PIPELINE_USE_DUPLICATESFILTER_DYNAMODB')):
-    ITEM_PIPELINES['skyscraper.pipelines.DoNotStoreDuplicatesPipeline'] = 200
+    ITEM_PIPELINES['skyscraper.pipelines.aws.DoNotStoreDuplicatesPipeline'] = 200
 
     # should be immediately after SaveDataPipeline
-    ITEM_PIPELINES['skyscraper.pipelines.StoreItemToDuplicateFilterPipeline'] \
+    ITEM_PIPELINES['skyscraper.pipelines.aws.StoreItemToDuplicateFilterPipeline'] \
         = 301
 
 if os.environ.get('PIPELINE_USE_OUTPUT_MQTT') \
         and int(os.environ.get('PIPELINE_USE_OUTPUT_MQTT')):
-    ITEM_PIPELINES['skyscraper.pipelines.MqttOutputPipeline'] = 210
+    ITEM_PIPELINES['skyscraper.pipelines.mqtt.MqttOutputPipeline'] = 210
 
 if os.environ.get('PIPELINE_USE_OUTPUT_REDIS') \
         and int(os.environ.get('PIPELINE_USE_OUTPUT_REDIS')):
-    ITEM_PIPELINES['skyscraper.pipelines.RedisOutputPipeline'] = 220
+    ITEM_PIPELINES['skyscraper.pipelines.redis.RedisOutputPipeline'] = 220
 
 if os.environ.get('PIPELINE_USE_OUTPUT_S3') \
         and int(os.environ.get('PIPELINE_USE_OUTPUT_S3')):
-    ITEM_PIPELINES['skyscraper.pipelines.SaveDataToS3Pipeline'] = 300
+    ITEM_PIPELINES['skyscraper.pipelines.aws.SaveDataToS3Pipeline'] = 300
 
 if os.environ.get('PIPELINE_USE_OUTPUT_POSTGRES') \
         and int(os.environ.get('PIPELINE_USE_OUTPUT_POSTGRES')):
-    ITEM_PIPELINES['skyscraper.pipelines.SaveDataToPostgresPipeline'] = 300
+    ITEM_PIPELINES['skyscraper.pipelines.postgres.SaveDataToPostgresPipeline'] = 300
 
 # Item count must come shortly after the storage plugins to make sure that
 # items that fail on or before storage are not counted and items that work
 # on storage get counted
 if os.environ.get('PIPELINE_USE_ITEMCOUNT_POSTGRES') \
         and int(os.environ.get('PIPELINE_USE_ITEMCOUNT_POSTGRES')):
-    ITEM_PIPELINES['skyscraper.pipelines.CountItemsPostgresPipeline'] = 310
+    ITEM_PIPELINES['skyscraper.pipelines.postgres.CountItemsPostgresPipeline'] = 310
 
 
 # Connection to PostgreSQL database
