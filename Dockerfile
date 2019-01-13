@@ -16,12 +16,14 @@ RUN apt-get clean && apt-get update && apt-get upgrade -y && apt-get install -y 
     python-virtualenv \
     python3-dev
 RUN mkdir /opt/skyscraper
+RUN mkdir /opt/skyscraper-spiders/example
 RUN mkdir /root/.aws
 
 COPY requirements.txt /opt/skyscraper/requirements.txt
 COPY docker/entrypoint.sh /opt/skyscraper/entrypoint.sh
 COPY docker/dotenv /opt/skyscraper/.env
 COPY . /opt/skyscraper/
+COPY skyscraper/spiders/example.py /opt/skyscraper-spiders/example/example.py
 
 RUN /bin/bash -c "cd /opt/skyscraper \
     && virtualenv -p /usr/bin/python3 env \
