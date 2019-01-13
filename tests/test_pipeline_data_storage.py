@@ -81,8 +81,6 @@ def mqtt_client():
 def test_save_data_pipeline_to_s3_does_store(s3_conn):
     pipeline = SaveDataToS3Pipeline(
         s3_conn.Bucket('skyscraper-data'),
-        unittest.mock.Mock(),
-        None,
         'namespace')
 
     spider = Spider(name='spider')
