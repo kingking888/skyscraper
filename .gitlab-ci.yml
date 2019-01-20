@@ -4,6 +4,7 @@ stages:
   - test
   - integration-test
   - sonarqube
+  - build
 
 variables:
   AWS_DEFAULT_REGION: us-east-1
@@ -89,3 +90,46 @@ sonarqube:
   services:
     - name: postgres
       alias: postgres
+
+# TODO: We might want to think about sending master to :latest and maybe
+# send the last built tag to :latest, but this might break if we re-build
+# an old tag at some point in time
+build-master:
+  stage: build
+  before_script:
+    # Declare non-secret variables directly here
+    - export CI_REGISTRY=index.docker.io
+    - export CI_REGISTRY_IMAGE=index.docker.io/molescrape/skyscraper
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - echo Building docker image "$CI_REGISTRY_IMAGE:latest"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker push "$CI_REGISTRY_IMAGE"
+  after_script:
+    # Remove unneeded image layers, because otherwise the disk will get full
+    # all the time
+    - docker image prune -f
+  tags:
+    - build-docker
+  only:
+    - master
+
+build:
+  stage: build
+  before_script:
+    # Declare non-secret variables directly here
+    - export CI_REGISTRY=index.docker.io
+    - export CI_REGISTRY_IMAGE=index.docker.io/molescrape/skyscraper
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - echo Building docker image "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+  after_script:
+    # Remove unneeded image layers, because otherwise the disk will get full
+    # all the time
+    - docker image prune -f
+  tags:
+    - build-docker
+  only:
+    - tags
