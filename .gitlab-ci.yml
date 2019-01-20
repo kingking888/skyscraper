@@ -122,9 +122,9 @@ build:
     - export CI_REGISTRY_IMAGE=index.docker.io/molescrape/skyscraper
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
-    - echo Building docker image "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" .
-    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - echo Building docker image "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
   after_script:
     # Remove unneeded image layers, because otherwise the disk will get full
     # all the time
