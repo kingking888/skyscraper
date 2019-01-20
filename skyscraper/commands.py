@@ -10,13 +10,12 @@ import skyscraper.mail
 @click.pass_context
 def skyscrapercli(ctx):
     ctx.obj = {}
-    ctx.obj['conn'] = skyscraper.db.get_postgres_conn()
 
 
 @click.command(name='crawl-next-scheduled')
 @click.pass_context
 def crawl_next_scheduled(ctx):
-    conn = ctx.obj['conn']
+    conn = skyscraper.db.get_postgres_conn()
     namespace, spider = skyscraper.db.next_scheduled_spider(conn)
 
     if namespace is None or spider is None:
@@ -44,7 +43,7 @@ def crawl_next_scheduled(ctx):
 @click.command(name='show-next-scheduled')
 @click.pass_context
 def show_next_scheduled(ctx):
-    conn = ctx.obj['conn']
+    conn = skyscraper.db.get_postgres_conn()
     namespace, spider = skyscraper.db.next_scheduled_spider(conn)
 
     if namespace is None or spider is None:
@@ -73,7 +72,7 @@ def crawl_manual(namespace, spider):
 @click.option('--send-mail', is_flag=True, default=False)
 @click.pass_context
 def check_item_count(ctx, send_mail):
-    conn = ctx.obj['conn']
+    conn = skyscraper.db.get_postgres_conn()
 
     yesterday_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
     yesterday = yesterday_date.strftime('%Y-%m-%d')

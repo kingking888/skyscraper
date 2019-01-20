@@ -57,6 +57,11 @@ if os.environ.get('PIPELINE_USE_OUTPUT_POSTGRES') \
         and int(os.environ.get('PIPELINE_USE_OUTPUT_POSTGRES')):
     ITEM_PIPELINES['skyscraper.pipelines.postgres.SaveDataToPostgresPipeline'] = 300
 
+if os.environ.get('PIPELINE_USE_OUTPUT_FOLDER') \
+        and int(os.environ.get('PIPELINE_USE_OUTPUT_FOLDER')):
+    ITEM_PIPELINES['skyscraper.pipelines.filesystem.SaveDataToFolderPipeline'] = 300
+    SKYSCRAPER_STORAGE_FOLDER_PATH = os.environ.get('SKYSCRAPER_STORAGE_FOLDER_PATH')
+
 # Item count must come shortly after the storage plugins to make sure that
 # items that fail on or before storage are not counted and items that work
 # on storage get counted
