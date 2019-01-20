@@ -16,7 +16,7 @@ RUN apt-get clean && apt-get update && apt-get upgrade -y && apt-get install -y 
     python-virtualenv \
     python3-dev
 RUN mkdir /opt/skyscraper
-RUN mkdir /opt/skyscraper-spiders/example
+RUN mkdir -p /opt/skyscraper-spiders/example
 RUN mkdir /root/.aws
 
 COPY requirements.txt /opt/skyscraper/requirements.txt
