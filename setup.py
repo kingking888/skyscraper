@@ -11,6 +11,7 @@ setup(
     packages=[
         'skyscraper',
         'skyscraper.pipelines',
+        'skyscraper.spiders',
     ],
     install_requires=[
         'python-dotenv',
