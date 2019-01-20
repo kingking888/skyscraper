@@ -116,12 +116,6 @@ class SaveDataToS3Pipeline(object):
         return cls(s3_data, namespace)
 
     def process_item(self, item, spider):
-        # Set the item attributes which are automatically set by the pipeline
-        # TODO: Move this info to a EnhanceItemFieldsPipeline
-        crawl_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        item['spider'] = spider.name
-        item['crawl_time'] = crawl_time
-
         # Store the meta info in our DynamoDB index
         try:
             self.items_cache[spider.name].append(item)

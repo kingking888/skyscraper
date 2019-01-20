@@ -18,3 +18,4 @@ class BasicItem(scrapy.Item):
     # Automatically filled by pipeline
     crawl_time = scrapy.Field()
     spider = scrapy.Field()
+    namespace = scrapy.Field()

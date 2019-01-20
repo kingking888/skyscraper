@@ -9,6 +9,7 @@ import datetime
 from scrapy.spiders import Spider
 import scrapy.exceptions
 
+from skyscraper.pipelines.metainfo import AddCrawlTimePipeline
 from skyscraper.pipelines.mqtt import MqttOutputPipeline
 from skyscraper.pipelines.aws import SaveDataToS3Pipeline
 from skyscraper.pipelines.aws import DoNotStoreDuplicatesPipeline
@@ -79,6 +80,7 @@ def mqtt_client():
 
 
 def test_save_data_pipeline_to_s3_does_store(s3_conn):
+    pre_pipeline = AddCrawlTimePipeline()
     pipeline = SaveDataToS3Pipeline(
         s3_conn.Bucket('skyscraper-data'),
         'namespace')
@@ -88,6 +90,7 @@ def test_save_data_pipeline_to_s3_does_store(s3_conn):
     item['id'] = 'my-unique-id'
     item['url'] = 'http://example.com/'
     item['source'] = 'dummy source'
+    item = pre_pipeline.process_item(item, spider)
     pipeline.process_item(item, spider)
     pipeline.close_spider(spider)
 
@@ -163,7 +166,6 @@ def test_mqtt_pipeline_does_send_item(mqtt_client):
     assert topic == 'skyscraper/items/dummy-namespace/spider'
     assert payload['url'] == 'http://example.com/'
     assert payload['source'] == 'dummy source'
-    assert payload['namespace'] == 'dummy-namespace'
 
 
 def test_mqtt_pipeline_does_return_item_after_process(mqtt_client):

@@ -75,12 +75,6 @@ class SaveDataToPostgresPipeline(object):
         return cls(conn, namespace)
 
     def process_item(self, item, spider):
-        # Set the item attributes which are automatically set by the pipeline
-        # TODO: Move this info to a EnhanceItemFieldsPipeline
-        crawl_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        item['spider'] = spider.name
-        item['crawl_time'] = crawl_time
-
         ie = self._get_exporter()
         exported = ie.export_item(item)
         payload = json.dumps(exported)

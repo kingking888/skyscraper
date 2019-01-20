@@ -27,7 +27,11 @@ ROBOTSTXT_OBEY = True
 DOWNLOAD_DELAY = 0.1
 
 
-ITEM_PIPELINES = {}
+ITEM_PIPELINES = {
+    'skyscraper.pipelines.metainfo.AddNamespacePipeline': 100,
+    'skyscraper.pipelines.metainfo.AddSpiderNamePipeline': 101,
+    'skyscraper.pipelines.metainfo.AddCrawlTimePipeline': 102,
+}
 
 if os.environ.get('PIPELINE_USE_DUPLICATESFILTER_DYNAMODB') \
         and int(os.environ.get('PIPELINE_USE_DUPLICATESFILTER_DYNAMODB')):

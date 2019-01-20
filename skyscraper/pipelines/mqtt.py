@@ -30,11 +30,6 @@ class MqttOutputPipeline(object):
     def process_item(self, item, spider):
         ie = self._get_exporter()
         exported = ie.export_item(item)
-        exported['namespace'] = self.namespace
-        exported['spider'] = spider.name
-
-        crawl_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        exported['crawl_time'] = crawl_time
 
         # send result to messaging queue
         payload = json.dumps(exported)
