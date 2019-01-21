@@ -62,7 +62,9 @@ class PostgresScheduler(object):
             self.df.log(request, self.spider)
             return False
 
-        if len(self) < self.MAX_PROCESS:
+        num_enqueued = self.stats.get_value('scheduler/enqueued',
+                                            default=0, spider=self.spider)
+        if num_enqueued < self.MAX_PROCESS:
             self._mqpush(request)
             self.stats.inc_value('scheduler/enqueued/memory',
                                  spider=self.spider)
