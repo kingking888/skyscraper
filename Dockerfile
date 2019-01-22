@@ -14,7 +14,13 @@ RUN apt-get clean && apt-get update && apt-get upgrade -y && apt-get install -y 
     libxml2-dev \
     libxslt1-dev \
     python-virtualenv \
-    python3-dev
+    python3-dev \
+    tor \
+    privoxy
+
+# Set privoxy config
+RUN echo "forward-socks4a / localhost:9050 ." >> /etc/privoxy/config
+
 RUN mkdir /opt/skyscraper
 RUN mkdir -p /opt/skyscraper-spiders/example /opt/skyscraper-data
 RUN mkdir /root/.aws
