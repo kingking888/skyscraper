@@ -98,8 +98,8 @@ build-master:
   stage: build
   before_script:
     # Declare non-secret variables directly here
-    - export CI_REGISTRY=index.docker.io
-    - export CI_REGISTRY_IMAGE=index.docker.io/molescrape/skyscraper
+    - export CI_REGISTRY=docker.io
+    - export CI_REGISTRY_IMAGE=molescrape/skyscraper
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - echo Building docker image "$CI_REGISTRY_IMAGE:latest"
@@ -118,8 +118,8 @@ build:
   stage: build
   before_script:
     # Declare non-secret variables directly here
-    - export CI_REGISTRY=index.docker.io
-    - export CI_REGISTRY_IMAGE=index.docker.io/molescrape/skyscraper
+    - export CI_REGISTRY=docker.io
+    - export CI_REGISTRY_IMAGE=molescrape/skyscraper
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - echo Building docker image "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
