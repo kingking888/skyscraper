@@ -19,7 +19,10 @@ RUN apt-get clean && apt-get update && apt-get upgrade -y && apt-get install -y 
     privoxy
 
 # Set privoxy config
-RUN echo "forward-socks4a / localhost:9050 ." >> /etc/privoxy/config
+# Remove listener to IPv6 address, not used by us and not default in
+# docker daemon. If required by somebody, change this later.
+RUN echo "forward-socks4a / localhost:9050 ." >> /etc/privoxy/config \
+    && sed -i '/^listen-address\s\[::1\]:8118/d' /etc/privoxy/config
 
 RUN mkdir /opt/skyscraper
 RUN mkdir -p /opt/skyscraper-spiders/example /opt/skyscraper-data
