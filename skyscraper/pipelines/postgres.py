@@ -93,7 +93,7 @@ class SaveDataToPostgresPipeline(object):
                 spider.name,
                 self.namespace,
                 payload,
-                crawl_time))
+                item['crawl_time']))
 
         self.conn.commit()
 
