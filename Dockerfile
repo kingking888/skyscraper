@@ -40,6 +40,7 @@ COPY skyscraper/spiders/example.py /opt/skyscraper-spiders/example/example.py
 RUN /bin/bash -c "cd /opt/skyscraper \
     && virtualenv -p /usr/bin/python3 env \
     && source env/bin/activate \
+    && pip install -r requirements.txt \
     && pip install .[all]"
 
 RUN chmod +x /opt/skyscraper/entrypoint.sh

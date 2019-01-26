@@ -2,7 +2,10 @@ python-dotenv
 scrapy
 psycopg2-binary
 click
+# pandas + beautifulsoup + html5lib used for reading tabular data
 pandas
+beautifulsoup4
+html5lib
 
 # extras
 boto3
