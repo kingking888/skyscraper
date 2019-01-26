@@ -2,6 +2,14 @@
 
 from setuptools import setup
 
+extras = {
+    'aws': ['boto3'],
+    'mqtt': ['paho-mqtt'],
+    'redis': ['redis'],
+}
+extras['all'] = [package for packages in extras.values()
+                 for package in packages]
+
 setup(
     name='skyscraper',
     version='0.1.0',
@@ -20,11 +28,7 @@ setup(
         'click',
         'pandas',
     ],
-    extras_require={
-        'aws': ['boto3'],
-        'mqtt': ['paho-mqtt'],
-        'redis': ['redis'],
-    },
+    extras_require=extras,
     entry_points='''
         [console_scripts]
         skyscraper=skyscraper.commands:skyscrapercli
