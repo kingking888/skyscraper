@@ -27,6 +27,7 @@ setup(
         'psycopg2-binary',
         'click',
         'pandas',
+        'requests',
     ],
     extras_require=extras,
     entry_points='''

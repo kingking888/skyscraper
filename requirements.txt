@@ -6,6 +6,8 @@ click
 pandas
 beautifulsoup4
 html5lib
+# requests is required to send pidar notification
+requests
 
 # extras
 boto3
