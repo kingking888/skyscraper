@@ -8,12 +8,20 @@ class SpiderRunner():
             self._set_proxy_tor()
 
         # TODO: can we do this directly within Python?
-        p = subprocess.Popen([
+        command = [
             "scrapy",
             "crawl",
             spider,
-            "-s", "USER_NAMESPACE=%s" % (namespace)
-        ])
+            "-s", "USER_NAMESPACE=%s" % (namespace),
+        ]
+
+        # set start_urls empty, so that scrapy does not start
+        # with the start_url again and instead do the backlog
+        if 'backlog' in options and options['backlog']:
+            command.append('-a')
+            command.append('start_urls=""')
+
+        p = subprocess.Popen(command)
         p.wait()
 
     def _set_proxy_tor(self):

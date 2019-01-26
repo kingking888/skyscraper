@@ -39,6 +39,25 @@ def update_schedule(conn, project, spider):
     conn.commit()
 
 
+def spider_with_biggest_backlog(conn):
+    c = conn.cursor()
+
+    c.execute('''SELECT p.name, s.name, s.use_tor
+        FROM skyscraper_requests r
+        JOIN skyscraper_spiders s ON r.spider_id = s.spider_id
+        JOIN projects p ON p.project_id = s.project_id
+        GROUP BY r.spider_id, p.name, s.name
+        ORDER BY COUNT(r.*)
+        LIMIT 1''')
+    row = c.fetchone()
+
+    if row is None:
+        return None, None, {}
+    else:
+        options = {'tor': True} if row[2] else {}
+        return row[0], row[1], options
+
+
 def get_spiders_below_item_count_threshold(conn, date):
     c = conn.cursor()
 

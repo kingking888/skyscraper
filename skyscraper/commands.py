@@ -59,6 +59,25 @@ def crawl_manual(namespace, spider, use_tor):
     runner.run(namespace, spider, options)
 
 
+@click.command(name='crawl-backlog')
+@click.pass_context
+def crawl_backlog(ctx):
+    conn = skyscraper.db.get_postgres_conn()
+    namespace, spider, options = \
+        skyscraper.db.spider_with_biggest_backlog(conn)
+    # TODO: Or find the one with the most points, but currently
+    # we don't count points per project/spider
+
+    if namespace is None or spider is None:
+        click.echo('No spider has backlog.')
+    else:
+        click.echo('Crawling backlog for spider %s/%s.' % (namespace, spider))
+
+        options['backlog'] = True
+        runner = skyscraper.execution.SpiderRunner()
+        runner.run(namespace, spider, options)
+
+
 @click.command(name='check-item-count')
 @click.option('--send-mail', is_flag=True, default=False)
 @click.pass_context
@@ -89,4 +108,5 @@ def check_item_count(ctx, send_mail):
 skyscrapercli.add_command(crawl_next_scheduled)
 skyscrapercli.add_command(show_next_scheduled)
 skyscrapercli.add_command(crawl_manual)
+skyscrapercli.add_command(crawl_backlog)
 skyscrapercli.add_command(check_item_count)
