@@ -69,6 +69,10 @@ if os.environ.get('PIPELINE_USE_ITEMCOUNT_POSTGRES') \
         and int(os.environ.get('PIPELINE_USE_ITEMCOUNT_POSTGRES')):
     ITEM_PIPELINES['skyscraper.pipelines.postgres.CountItemsPostgresPipeline'] = 310
 
+PIDAR_URL = os.environ.get('PIDAR_URL')
+if os.environ.get('PIDAR_URL'):
+    ITEM_PIPELINES['skyscraper.pipelines.monitoring.PidarMonitoringPipeline'] = 320
+
 
 # Connection to PostgreSQL database
 DB_CONN = os.environ.get('DB_CONN')
@@ -101,5 +105,3 @@ if os.environ.get('SCHEDULER'):
         int(os.environ.get('SCHEDULER_REDIS_BATCH_SIZE'))
     SCHEDULER_POSTGRES_BATCH_SIZE = \
         int(os.environ.get('SCHEDULER_POSTGRES_BATCH_SIZE'))
-
-PIDAR_URL = os.environ.get('PIDAR_URL')
