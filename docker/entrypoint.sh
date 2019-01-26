@@ -7,11 +7,8 @@ export LANG=C.UTF-8
 if [ "$TOR_ENABLED" -eq "1" ]; then
     tor --runasdaemon 1
     # TODO: How can we reliably check when TOR is up?
-    sleep 10
+    sleep 20
     privoxy /etc/privoxy/config
-
-    export http_proxy=http://127.0.0.1:8118
-    export https_proxy=https://127.0.0.1:8118
 fi
 
 # need to switch into the right folder, because otherwise scrapy does

@@ -1,9 +1,9 @@
 import click
-import subprocess
 import datetime
 
 import skyscraper.db
 import skyscraper.mail
+import skyscraper.execution
 
 
 @click.group()
@@ -16,7 +16,7 @@ def skyscrapercli(ctx):
 @click.pass_context
 def crawl_next_scheduled(ctx):
     conn = skyscraper.db.get_postgres_conn()
-    namespace, spider = skyscraper.db.next_scheduled_spider(conn)
+    namespace, spider, options = skyscraper.db.next_scheduled_spider(conn)
 
     if namespace is None or spider is None:
         click.echo('No spider is scheduled for execution.')
@@ -30,21 +30,16 @@ def crawl_next_scheduled(ctx):
         skyscraper.db.update_schedule(conn, namespace, spider)
 
         click.echo('Executing spider %s/%s.' % (namespace, spider))
-        # TODO: can we do this directly within Python?
-        p = subprocess.Popen([
-            "scrapy",
-            "crawl",
-            spider,
-            "-s", "USER_NAMESPACE=%s" % (namespace)
-        ])
-        p.wait()
+
+        runner = skyscraper.execution.SpiderRunner()
+        runner.run(namespace, spider, options)
 
 
 @click.command(name='show-next-scheduled')
 @click.pass_context
 def show_next_scheduled(ctx):
     conn = skyscraper.db.get_postgres_conn()
-    namespace, spider = skyscraper.db.next_scheduled_spider(conn)
+    namespace, spider, _ = skyscraper.db.next_scheduled_spider(conn)
 
     if namespace is None or spider is None:
         click.echo('No spider is scheduled for execution.')
@@ -55,17 +50,13 @@ def show_next_scheduled(ctx):
 @click.command(name='crawl-manual')
 @click.argument('namespace')
 @click.argument('spider')
-def crawl_manual(namespace, spider):
+@click.option('--use-tor', is_flag=True, help='Use the TOR network')
+def crawl_manual(namespace, spider, use_tor):
     click.echo('Executing spider %s/%s.' % (namespace, spider))
 
-    # TODO: can we do this directly within Python?
-    p = subprocess.Popen([
-        "scrapy",
-        "crawl",
-        spider,
-        "-s", "USER_NAMESPACE=%s" % (namespace)
-    ])
-    p.wait()
+    options = {'tor': True} if use_tor else {}
+    runner = skyscraper.execution.SpiderRunner()
+    runner.run(namespace, spider, options)
 
 
 @click.command(name='check-item-count')

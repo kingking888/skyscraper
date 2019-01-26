@@ -14,7 +14,7 @@ teardown() {
     docker run --rm --env TOR_ENABLED=1 \
         -v $PWD/system-tests/spiders:/opt/skyscraper-spiders \
         -v /tmp/skyscraper-data:/opt/skyscraper-data \
-        molescrape/skyscraper crawl-manual tor ipcheck
+        molescrape/skyscraper crawl-manual tor ipcheck --use-tor
 
     containerip=$(jq -r '.source' /tmp/skyscraper-data/*.json)
 

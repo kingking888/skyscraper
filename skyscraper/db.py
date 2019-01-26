@@ -13,7 +13,7 @@ def get_postgres_conn():
 def next_scheduled_spider(conn):
     c = conn.cursor()
 
-    c.execute('''SELECT p.name, s.name
+    c.execute('''SELECT p.name, s.name, s.use_tor
         FROM skyscraper_spiders s
         JOIN projects p ON p.project_id = s.project_id
         WHERE s.next_scheduled_runtime <= NOW() at time zone 'utc'
@@ -22,9 +22,10 @@ def next_scheduled_spider(conn):
     row = c.fetchone()
 
     if row is None:
-        return None, None
+        return None, None, {}
     else:
-        return row[0], row[1]
+        options = {'tor': True} if row[2] else {}
+        return row[0], row[1], options
 
 
 def update_schedule(conn, project, spider):
