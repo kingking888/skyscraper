@@ -4,6 +4,7 @@ stages:
   - test
   - integration-test
   - sonarqube
+  - system-test
   - build
 
 variables:
@@ -90,6 +91,20 @@ sonarqube:
   services:
     - name: postgres
       alias: postgres
+
+system-test:
+  stage: system-test
+  before_script:
+    - docker build -t molescrape/skyscraper .
+  script:
+    - bats system-tests/
+  after_script:
+    # Remove unneeded image layers, because otherwise the disk will get full
+    # all the time
+    - docker image prune -f
+  tags:
+    # bats and jq must be installed on this runner
+    - build-docker
 
 # TODO: We might want to think about sending master to :latest and maybe
 # send the last built tag to :latest, but this might break if we re-build
