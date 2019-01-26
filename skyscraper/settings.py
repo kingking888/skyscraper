@@ -99,5 +99,7 @@ if os.environ.get('SCHEDULER'):
     SCHEDULER_REDIS_QUEUE_HOST = os.environ.get('SCHEDULER_REDIS_QUEUE_HOST')
     SCHEDULER_REDIS_BATCH_SIZE = \
         int(os.environ.get('SCHEDULER_REDIS_BATCH_SIZE'))
+    SCHEDULER_POSTGRES_BATCH_SIZE = \
+        int(os.environ.get('SCHEDULER_POSTGRES_BATCH_SIZE'))
 
 PIDAR_URL = os.environ.get('PIDAR_URL')
