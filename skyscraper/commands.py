@@ -18,10 +18,31 @@ def crawl_scheduled_or_backlog(ctx):
     conn = skyscraper.db.get_postgres_conn()
     namespace, spider, options = skyscraper.db.next_scheduled_spider(conn)
 
-    if namespace is None or spider is None:
-        crawl_backlog(ctx)
+    if namespace is not None and spider is not None:
+        click.echo(
+            'Increasing next runtime of spider %s/%s'
+            % (namespace, spider))
+        skyscraper.db.update_schedule(conn, namespace, spider)
+
+        click.echo('Executing spider %s/%s.' % (namespace, spider))
+
+        runner = skyscraper.execution.SpiderRunner()
+        runner.run(namespace, spider, options)
     else:
-        crawl_next_scheduled(ctx)
+        namespace, spider, options = \
+            skyscraper.db.spider_with_biggest_backlog(conn)
+        # TODO: Or find the one with the most points, but currently
+        # we don't count points per project/spider
+
+        if namespace is None or spider is None:
+            click.echo('No spider scheduled and no spider has backlog.')
+        else:
+            click.echo('Crawling backlog for spider %s/%s.'
+                       % (namespace, spider))
+
+            options['backlog'] = True
+            runner = skyscraper.execution.SpiderRunner()
+            runner.run(namespace, spider, options)
 
 
 @click.command(name='crawl-next-scheduled')
