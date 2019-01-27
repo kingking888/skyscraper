@@ -15,6 +15,12 @@ from scrapy.utils.misc import load_object
 
 
 class PostgresScheduler(object):
+    """The PostgresScheduler is a combined in-memory and persistent
+    scheduler. It will keep a maximum number of k requests in memory and
+    crawl these k requests. All other requests will be stored to the
+    PostgreSQL database and can be crawled later.
+    """
+
     def __init__(self, dupefilter, conn, stats, namespace, max_process=500):
         self.df = dupefilter
         self.conn = conn
@@ -45,6 +51,9 @@ class PostgresScheduler(object):
                    max_process=batch_size)
 
     def has_pending_requests(self):
+        """Return true as long as the scheduler still has requests in the
+        in-memory queue.
+        """
         return len(self) > 0
 
     def open(self, spider):

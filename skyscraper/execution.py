@@ -2,11 +2,18 @@ import os
 import subprocess
 
 
-class SpiderRunner():
+class SpiderRunner(object):
+    """This class is a runner to help with the execution of spiders with
+    a given configuration. It sets up the environment and configurations
+    and then executes the spider.
+    """
     def __init__(self, http_proxy):
         self.http_proxy = http_proxy
 
     def run(self, namespace, spider, options={}):
+        """Run the given spider with the defined options. Will block
+        until the spider has finished.
+        """
         if 'tor' in options and options['tor']:
             self._set_proxy_tor()
 

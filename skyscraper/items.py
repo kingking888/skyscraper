@@ -9,6 +9,9 @@ import scrapy
 
 
 class BasicItem(scrapy.Item):
+    """BasicItem is the standard item that all spiders have to emit when
+    they want to yield a scraped item
+    """
     id = scrapy.Field()
     url = scrapy.Field()
     slug = scrapy.Field()  # deprecated

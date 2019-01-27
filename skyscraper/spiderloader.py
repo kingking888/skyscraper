@@ -11,6 +11,8 @@ import psycopg2
 
 @implementer(ISpiderLoader)
 class PostgresSpiderLoader(object):
+    """PostgresSpiderLoader reads spiders from the PostgreSQL database."""
+
     def __init__(self, conn, namespace, spider_modules):
         self.conn = conn
         self.namespace = namespace
@@ -87,6 +89,7 @@ class PostgresSpiderLoader(object):
             self._spiders[spcls.name] = spcls
 
     def _load_all_spiders(self):
+        # TODO: Combine common code with other loaders into a common class
         for name in self.spider_modules:
             try:
                 for module in walk_modules(name):
@@ -113,6 +116,14 @@ class PostgresSpiderLoader(object):
 
 @implementer(ISpiderLoader)
 class FolderSpiderLoader(object):
+    """FolderSpiderLoader reads spider code from a folder on the file system.
+    The folders must be structured according to the namespaces and spider
+    names. The namespace must be a folder and the spider code must be in
+    a Python file with the spider name as file name:
+
+        /path/to/folder/<namespace>/<spider-name>.py
+    """
+
     def __init__(self, spiders_folder, namespace, spider_modules):
         self.spiders_folder = spiders_folder
         self.namespace = namespace
@@ -157,6 +168,7 @@ class FolderSpiderLoader(object):
             self._spiders[spcls.name] = spcls
 
     def _load_all_spiders(self):
+        # TODO: Combine common code with other loaders into a common class
         for name in self.spider_modules:
             try:
                 for module in walk_modules(name):

@@ -11,6 +11,11 @@ def get_postgres_conn():
 
 
 def next_scheduled_spider(conn):
+    """Retrieves the next scheduled spider from the database. The next
+    scheduled spider is the scheduled runtime that is both the
+    - smallest runtime among all spiders, and
+    - smaller than the current time
+    """
     c = conn.cursor()
 
     c.execute('''SELECT p.name, s.name, s.use_tor
@@ -29,6 +34,9 @@ def next_scheduled_spider(conn):
 
 
 def update_schedule(conn, project, spider):
+    """Updates the next scheduled runtime for a spider by setting it to the
+    curent time.
+    """
     c = conn.cursor()
 
     c.execute('''UPDATE skyscraper_spiders
@@ -40,6 +48,7 @@ def update_schedule(conn, project, spider):
 
 
 def spider_with_biggest_backlog(conn):
+    """Return the spider that has the most requests in the backlog."""
     c = conn.cursor()
 
     c.execute('''SELECT p.name, s.name, s.use_tor
@@ -59,6 +68,10 @@ def spider_with_biggest_backlog(conn):
 
 
 def get_spiders_below_item_count_threshold(conn, date):
+    """Get all spiders that did not crawl enough items according to their
+    threshold on a given date. This can be an indicator that they do not work
+    correctly.
+    """
     c = conn.cursor()
 
     c.execute('''SELECT p.name, s.name,
