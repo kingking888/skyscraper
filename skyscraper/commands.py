@@ -22,6 +22,10 @@ def skyscrapercli(ctx):
 @click.command(name='crawl-scheduled-or-backlog')
 @click.pass_context
 def crawl_scheduled_or_backlog(ctx):
+    """Either perform a scheduled crawl for the next scheduled spider
+    or if no scheduled spider is due perform a backlog crawl. If no backlog
+    requests are available either, do nothing
+    """
     conn = skyscraper.db.get_postgres_conn()
     namespace, spider, options = skyscraper.db.next_scheduled_spider(conn)
 
@@ -55,6 +59,10 @@ def crawl_scheduled_or_backlog(ctx):
 @click.command(name='crawl-next-scheduled')
 @click.pass_context
 def crawl_next_scheduled(ctx):
+    """Perform a scheduled crawl for the spider that has the lowest
+    next scheduled runtime. The scheduled runtime must be smaller than the
+    current time or otherwise this method will do nothing.
+    """
     conn = skyscraper.db.get_postgres_conn()
     namespace, spider, options = skyscraper.db.next_scheduled_spider(conn)
 
@@ -78,6 +86,9 @@ def crawl_next_scheduled(ctx):
 @click.command(name='show-next-scheduled')
 @click.pass_context
 def show_next_scheduled(ctx):
+    """Show the next scheduled spider that has the lowest
+    next scheduled runtime, but do not perform an actual crawl.
+    """
     conn = skyscraper.db.get_postgres_conn()
     namespace, spider, _ = skyscraper.db.next_scheduled_spider(conn)
 
@@ -91,7 +102,11 @@ def show_next_scheduled(ctx):
 @click.argument('namespace')
 @click.argument('spider')
 @click.option('--use-tor', is_flag=True, help='Use the TOR network')
-def crawl_manual(namespace, spider, use_tor):
+@click.pass_context
+def crawl_manual(ctx, namespace, spider, use_tor):
+    """Perform a manual crawl. The user can define the name of the
+    namespace and the spider that should be executed.
+    """
     click.echo('Executing spider %s/%s.' % (namespace, spider))
 
     options = {'tor': True} if use_tor else {}
@@ -102,6 +117,9 @@ def crawl_manual(namespace, spider, use_tor):
 @click.command(name='crawl-backlog')
 @click.pass_context
 def crawl_backlog(ctx):
+    """Perform a backlog crawl. This will search for requests in the
+    persistent storage and execute them.
+    """
     conn = skyscraper.db.get_postgres_conn()
     namespace, spider, options = \
         skyscraper.db.spider_with_biggest_backlog(conn)
@@ -122,6 +140,11 @@ def crawl_backlog(ctx):
 @click.option('--send-mail', is_flag=True, default=False)
 @click.pass_context
 def check_item_count(ctx, send_mail):
+    """Run a plausibility check on the number of crawled items. Each spider
+    has a number of minimum items it should crawl per day. This function
+    will search for spiders that have crawled less items than required and
+    send a notification for them.
+    """
     conn = skyscraper.db.get_postgres_conn()
 
     yesterday_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
