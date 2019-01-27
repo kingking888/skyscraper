@@ -19,7 +19,7 @@ class SpiderRunner():
         # with the start_url again and instead do the backlog
         if 'backlog' in options and options['backlog']:
             command.append('-a')
-            command.append('start_urls=""')
+            command.append('start_urls=')
 
         p = subprocess.Popen(command)
         p.wait()
