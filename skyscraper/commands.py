@@ -12,6 +12,18 @@ def skyscrapercli(ctx):
     ctx.obj = {}
 
 
+@click.command(name='crawl-scheduled-or-backlog')
+@click.pass_context
+def crawl_scheduled_or_backlog(ctx):
+    conn = skyscraper.db.get_postgres_conn()
+    namespace, spider, options = skyscraper.db.next_scheduled_spider(conn)
+
+    if namespace is None or spider is None:
+        crawl_backlog(ctx)
+    else:
+        crawl_next_scheduled(ctx)
+
+
 @click.command(name='crawl-next-scheduled')
 @click.pass_context
 def crawl_next_scheduled(ctx):
@@ -105,6 +117,7 @@ def check_item_count(ctx, send_mail):
         click.echo('No spiders are below threshold.')
 
 
+skyscrapercli.add_command(crawl_scheduled_or_backlog)
 skyscrapercli.add_command(crawl_next_scheduled)
 skyscrapercli.add_command(show_next_scheduled)
 skyscrapercli.add_command(crawl_manual)
