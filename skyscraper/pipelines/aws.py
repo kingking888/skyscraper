@@ -12,6 +12,14 @@ from scrapy.exceptions import DropItem
 
 
 class DoNotStoreDuplicatesPipeline(object):
+    """This is a pipeline step that checks whether an item has already been
+    scraped before. It is used in combination with
+    StoreItemToDuplicateFilterPipeline, which is responsible to store the
+    IDs of scraped items.
+
+    If an item has already been scraped before it will be dropped and not
+    passed further to other pipeline steps.
+    """
     def __init__(self, dynamodb_index, namespace):
         self.namespace = namespace
         self.article_index = dynamodb_index
@@ -44,6 +52,11 @@ class DoNotStoreDuplicatesPipeline(object):
 
 
 class StoreItemToDuplicateFilterPipeline(object):
+    """This pipeline stores the IDs of scraped items to a persistent
+    duplicate filter. It is used in combination with
+    DoNotStoreDuplicatesPipeline, which later checks if a spider tries to
+    emit an item that has been scraped before.
+    """
     def __init__(self, dynamodb_index, namespace):
         self.namespace = namespace
 
@@ -91,6 +104,13 @@ class StoreItemToDuplicateFilterPipeline(object):
 
 
 class SaveDataToS3Pipeline(object):
+    """This pipeline steps stores emitted items to an S3 bucket.
+
+    S3 counts each request to the S3 bucket, which might lead to high
+    costs if a lot of items are scraped. Thus, this class
+    performs buffering and will save files with multiple items in one file
+    to S3.
+    """
     ITEMS_CACHE_MAXSIZE = 100
 
     def __init__(self, s3_data, namespace):
