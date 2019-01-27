@@ -6,7 +6,10 @@ class TableParser(object):
         self.table = pd.read_html(html, header=header)[0]
 
     def column(self, col_name):
-        return self.table[col_name].tolist()
+        if isinstance(col_name, int):
+            return self.table.iloc[:, col_name].tolist()
+        else:
+            return self.table[col_name].tolist()
 
     def get_dataframe(self):
         return self.table
