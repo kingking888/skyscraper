@@ -1,5 +1,6 @@
 import click
 import datetime
+import os
 
 import skyscraper.db
 import skyscraper.mail
@@ -9,7 +10,13 @@ import skyscraper.execution
 @click.group()
 @click.pass_context
 def skyscrapercli(ctx):
-    ctx.obj = {}
+    proxy = None
+    if os.environ.get('SKYSCRAPER_TOR_PROXY'):
+        proxy = os.environ.get('SKYSCRAPER_TOR_PROXY')
+
+    ctx.obj = {
+        'proxy': proxy
+    }
 
 
 @click.command(name='crawl-scheduled-or-backlog')
@@ -26,7 +33,7 @@ def crawl_scheduled_or_backlog(ctx):
 
         click.echo('Executing spider %s/%s.' % (namespace, spider))
 
-        runner = skyscraper.execution.SpiderRunner()
+        runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
         runner.run(namespace, spider, options)
     else:
         namespace, spider, options = \
@@ -41,7 +48,7 @@ def crawl_scheduled_or_backlog(ctx):
                        % (namespace, spider))
 
             options['backlog'] = True
-            runner = skyscraper.execution.SpiderRunner()
+            runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
             runner.run(namespace, spider, options)
 
 
@@ -64,7 +71,7 @@ def crawl_next_scheduled(ctx):
 
         click.echo('Executing spider %s/%s.' % (namespace, spider))
 
-        runner = skyscraper.execution.SpiderRunner()
+        runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
         runner.run(namespace, spider, options)
 
 
@@ -88,7 +95,7 @@ def crawl_manual(namespace, spider, use_tor):
     click.echo('Executing spider %s/%s.' % (namespace, spider))
 
     options = {'tor': True} if use_tor else {}
-    runner = skyscraper.execution.SpiderRunner()
+    runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
     runner.run(namespace, spider, options)
 
 
@@ -107,7 +114,7 @@ def crawl_backlog(ctx):
         click.echo('Crawling backlog for spider %s/%s.' % (namespace, spider))
 
         options['backlog'] = True
-        runner = skyscraper.execution.SpiderRunner()
+        runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
         runner.run(namespace, spider, options)
 
 
