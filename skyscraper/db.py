@@ -21,8 +21,9 @@ def next_scheduled_spider(conn):
     c.execute('''SELECT p.name, s.name, s.use_tor
         FROM skyscraper_spiders s
         JOIN projects p ON p.project_id = s.project_id
-        WHERE s.next_scheduled_runtime <= NOW() at time zone 'utc'
-            OR s.next_scheduled_runtime IS NULL
+        WHERE (s.next_scheduled_runtime <= NOW() at time zone 'utc'
+                OR s.next_scheduled_runtime IS NULL)
+            AND s.enabled = true
         ORDER BY s.next_scheduled_runtime ASC NULLS FIRST''')
     row = c.fetchone()
 
@@ -55,6 +56,7 @@ def spider_with_biggest_backlog(conn):
         FROM skyscraper_requests r
         JOIN skyscraper_spiders s ON r.spider_id = s.spider_id
         JOIN projects p ON p.project_id = s.project_id
+        WHERE s.enabled = true
         GROUP BY r.spider_id, p.name, s.name, s.use_tor
         ORDER BY COUNT(r.*)
         LIMIT 1''')
@@ -94,8 +96,10 @@ def get_spiders_below_item_count_threshold(conn, date):
             AND sd.stats_date = %s
         -- if the threshold is set to 0 a scrape count of NULL (i.e. not
         -- in DB yet for this day) is OK, because NULL also means 0 items
-        WHERE (sd.items_scraped_count IS NULL
-            AND s.items_scraped_daily_threshold > 0)
-            OR sd.items_scraped_count < s.items_scraped_daily_threshold
+        WHERE ((sd.items_scraped_count IS NULL
+                AND s.items_scraped_daily_threshold > 0)
+                OR sd.items_scraped_count < s.items_scraped_daily_threshold)
+        -- we do not want to send an alarm for a spider that is disabled
+            AND s.enabled = true
         ORDER BY p.name, s.name''', (date,))
     return c.fetchall()
