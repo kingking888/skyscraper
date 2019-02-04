@@ -46,6 +46,28 @@ def postgresdb(conn):
             'http://example.com/',
             'GET',
             NOW())""")
+    c.execute(
+        """INSERT INTO skyscraper_requests
+        (request_id, spider_id, priority, url, method, create_date)
+        VALUES (
+            'a9225ec5-e593-4132-b428-26d8aa8ca89e',
+            (SELECT spider_id FROM skyscraper_spiders
+                WHERE name = 'samplespider'),
+            0,
+            'http://example.com/',
+            'GET',
+            NOW())""")
+    c.execute(
+        """INSERT INTO skyscraper_requests
+        (request_id, spider_id, priority, url, method, create_date)
+        VALUES (
+            'a9225ec5-e593-4132-b428-26d8aa8ca89f',
+            (SELECT spider_id FROM skyscraper_spiders
+                WHERE name = 'older-spider'),
+            0,
+            'http://example.com/',
+            'GET',
+            NOW())""")
 
     conn.commit()
 

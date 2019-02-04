@@ -58,7 +58,7 @@ def spider_with_biggest_backlog(conn):
         JOIN projects p ON p.project_id = s.project_id
         WHERE s.enabled = true
         GROUP BY r.spider_id, p.name, s.name, s.use_tor
-        ORDER BY COUNT(r.*)
+        ORDER BY COUNT(r.*) DESC
         LIMIT 1''')
     row = c.fetchone()
 
