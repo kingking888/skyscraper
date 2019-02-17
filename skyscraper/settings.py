@@ -103,8 +103,5 @@ if os.environ.get('STATS_CLASS'):
 # Overwrite default scheduler if defined by user
 if os.environ.get('SCHEDULER'):
     SCHEDULER = os.environ.get('SCHEDULER')
-    SCHEDULER_REDIS_QUEUE_HOST = os.environ.get('SCHEDULER_REDIS_QUEUE_HOST')
-    SCHEDULER_REDIS_BATCH_SIZE = \
-        int(os.environ.get('SCHEDULER_REDIS_BATCH_SIZE'))
     SCHEDULER_POSTGRES_BATCH_SIZE = \
         int(os.environ.get('SCHEDULER_POSTGRES_BATCH_SIZE'))
