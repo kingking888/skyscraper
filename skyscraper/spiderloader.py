@@ -104,7 +104,7 @@ class PostgresSpiderLoader(object):
                     raise
 
     def find_by_request(self, request):
-        raise NotImplementedError("find_by_request is not supported by S3SpiderLoader")
+        raise NotImplementedError("find_by_request is not supported by PostgresSpiderLoader")
 
     def list(self):
         prefix = '%s/' % self.namespace
@@ -183,7 +183,7 @@ class FolderSpiderLoader(object):
                     raise
 
     def find_by_request(self, request):
-        raise NotImplementedError("find_by_request is not supported by LocalSpiderLoader")
+        raise NotImplementedError("find_by_request is not supported by FolderSpiderLoader")
 
     def list(self):
         source_folder = os.path.join(self.spiders_folder, self.namespace)
