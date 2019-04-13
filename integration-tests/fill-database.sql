@@ -22,4 +22,10 @@ class ExampleSpider(scrapy.Spider):
         item[''source''] = response.text
         return item',
     60,
-    NOW());
+    NOW()),
+(
+    'unscheduled-spider',
+    (SELECT project_id FROM projects WHERE name = 'test-database'),
+    '# do nothing',
+    NULL,
+    NULL);

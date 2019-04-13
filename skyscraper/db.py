@@ -15,14 +15,14 @@ def next_scheduled_spider(conn):
     scheduled spider is the scheduled runtime that is both the
     - smallest runtime among all spiders, and
     - smaller than the current time
+    NULL means that the spider is currently not scheduled for execution
     """
     c = conn.cursor()
 
     c.execute('''SELECT p.name, s.name, s.use_tor
         FROM skyscraper_spiders s
         JOIN projects p ON p.project_id = s.project_id
-        WHERE (s.next_scheduled_runtime <= NOW() at time zone 'utc'
-                OR s.next_scheduled_runtime IS NULL)
+        WHERE s.next_scheduled_runtime <= NOW() at time zone 'utc'
             AND s.enabled = true
         ORDER BY s.next_scheduled_runtime ASC NULLS FIRST''')
     row = c.fetchone()
@@ -37,12 +37,18 @@ def next_scheduled_spider(conn):
 def update_schedule(conn, project, spider):
     """Updates the next scheduled runtime for a spider by setting it to the
     curent time.
+    If a spider has recurrency_minutes set to NULL, then this means that
+    it is not a recurrent spider and its next scheduled runtime will be
+    set to NULL (=do not execute).
     """
     c = conn.cursor()
 
     c.execute('''UPDATE skyscraper_spiders
         SET next_scheduled_runtime =
-            NOW() at time zone 'utc' + interval '1 minute' * recurrency_minutes
+            CASE
+                WHEN recurrency_minutes IS NULL THEN NULL
+                ELSE NOW() at time zone 'utc' + interval '1 minute' * recurrency_minutes
+            END
         WHERE project_id = (SELECT project_id FROM projects WHERE name = %s)
         AND name = %s''', (project, spider))
     conn.commit()
