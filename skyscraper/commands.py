@@ -37,8 +37,9 @@ def crawl_scheduled_or_backlog(ctx):
 
         click.echo('Executing spider %s/%s.' % (namespace, spider))
 
+        semaphore = skyscraper.execution.Semaphore(conn, namespace, spider)
         runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
-        runner.run(namespace, spider, options)
+        runner.run(namespace, spider, semaphore, options)
     else:
         namespace, spider, options = \
             skyscraper.db.spider_with_biggest_backlog(conn)
@@ -52,8 +53,9 @@ def crawl_scheduled_or_backlog(ctx):
                        % (namespace, spider))
 
             options['backlog'] = True
+            semaphore = skyscraper.execution.Semaphore(conn, namespace, spider)
             runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
-            runner.run(namespace, spider, options)
+            runner.run(namespace, spider, semaphore, options)
 
 
 @click.command(name='crawl-next-scheduled')
@@ -79,8 +81,9 @@ def crawl_next_scheduled(ctx):
 
         click.echo('Executing spider %s/%s.' % (namespace, spider))
 
+        semaphore = skyscraper.execution.Semaphore(conn, namespace, spider)
         runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
-        runner.run(namespace, spider, options)
+        runner.run(namespace, spider, semaphore, options)
 
 
 @click.command(name='show-next-scheduled')
@@ -111,7 +114,7 @@ def crawl_manual(ctx, namespace, spider, use_tor):
 
     options = {'tor': True} if use_tor else {}
     runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
-    runner.run(namespace, spider, options)
+    runner.run(namespace, spider, semaphore=None, options=options)
 
 
 @click.command(name='crawl-backlog')
@@ -132,8 +135,9 @@ def crawl_backlog(ctx):
         click.echo('Crawling backlog for spider %s/%s.' % (namespace, spider))
 
         options['backlog'] = True
+        semaphore = skyscraper.execution.Semaphore(conn, namespace, spider)
         runner = skyscraper.execution.SpiderRunner(ctx.obj['proxy'])
-        runner.run(namespace, spider, options)
+        runner.run(namespace, spider, semaphore, options)
 
 
 @click.command(name='check-item-count')
