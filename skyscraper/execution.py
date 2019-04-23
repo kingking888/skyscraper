@@ -75,11 +75,12 @@ class Semaphore(object):
     def acquire(self):
         c = self.conn.cursor()
         c.execute('''UPDATE skyscraper_spiders
-            SET blocked_from_running_until = NOW() + INTERVAL '%s minutes'
+            SET blocked_from_running_until = NOW() at time zone 'utc'
+                + INTERVAL '%s minutes'
             -- fail if somebody else blocked it
             WHERE (
                 blocked_from_running_until IS NULL
-                OR blocked_from_running_until < NOW()
+                OR blocked_from_running_until < NOW() at time zone 'utc'
             )
             AND name = %s
             AND project_id IN (
@@ -95,7 +96,7 @@ class Semaphore(object):
         c = self.conn.cursor()
         c.execute('''SELECT COUNT(*) FROM skyscraper_spiders s
             JOIN projects p ON s.project_id = p.project_id
-            WHERE blocked_from_running_until >= NOW()
+            WHERE blocked_from_running_until >= NOW() at time zone 'utc'
             AND s.name = %s
             AND p.name = %s''', (self.spider, self.namespace))
         row = c.fetchone()

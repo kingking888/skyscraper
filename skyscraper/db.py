@@ -25,7 +25,7 @@ def next_scheduled_spider(conn):
         WHERE s.next_scheduled_runtime <= NOW() at time zone 'utc'
             AND s.enabled = true
             AND (s.blocked_from_running_until IS NULL
-                OR s.blocked_from_running_until < NOW())
+                OR s.blocked_from_running_until < NOW() at time zone 'utc')
         ORDER BY s.next_scheduled_runtime ASC NULLS FIRST''')
     row = c.fetchone()
 
@@ -66,7 +66,7 @@ def spider_with_biggest_backlog(conn):
         JOIN projects p ON p.project_id = s.project_id
         WHERE s.enabled = true
         AND (s.blocked_from_running_until IS NULL
-            OR s.blocked_from_running_until < NOW())
+            OR s.blocked_from_running_until < NOW() at time zone 'utc')
         GROUP BY r.spider_id, p.name, s.name, s.use_tor
         ORDER BY COUNT(r.*) DESC
         LIMIT 1''')
