@@ -68,7 +68,7 @@ def spider_with_biggest_backlog(conn):
         AND (s.blocked_from_running_until IS NULL
             OR s.blocked_from_running_until < NOW() at time zone 'utc')
         GROUP BY r.spider_id, p.name, s.name, s.use_tor
-        ORDER BY COUNT(r.*) DESC
+        ORDER BY COUNT(*) DESC
         LIMIT 1''')
     row = c.fetchone()
 
