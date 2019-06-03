@@ -7,6 +7,66 @@ from scrapy.utils.misc import walk_modules
 from scrapy.utils.spider import iter_spider_classes
 
 import psycopg2
+import importlib
+import scrapy
+import inspect
+import subprocess
+
+
+@implementer(ISpiderLoader)
+class GitSpiderLoader(object):
+    """Reads spiders from a git repository"""
+
+    def __init__(self, folder, namespace, branch='master'):
+        self.folder = folder
+        self.namespace = namespace
+        self.branch = branch
+
+    @classmethod
+    def from_settings(cls, settings):
+        folder = settings.get('SPIDERLOADER_GIT_FOLDER')
+        branch = settings.get('SPIDERLOADER_GIT_BRANCH')
+        namespace = settings.get('USER_NAMESPACE')
+
+        return cls(folder, namespace, branch)
+
+    def load(self, spider_name):
+        self._update_repo()
+
+        spiderfile = os.path.join(
+            self.folder, self.namespace, spider_name + '.py')
+
+        spec = importlib.util.spec_from_file_location(
+            "skyscraper.spiders.dynamicspider", spiderfile)
+        dynamicspider = importlib.util.module_from_spec(spec)
+
+        try:
+            spec.loader.exec_module(dynamicspider)
+        except FileNotFoundError:
+            raise KeyError(
+                'Spider not found: {}'.format(
+                    self._full_spider_name(spider_name)))
+
+        # extract the first class that is a child of scrapy.Spider
+        for name, obj in inspect.getmembers(dynamicspider):
+            if inspect.isclass(obj) and issubclass(obj, scrapy.Spider):
+                return obj
+
+        raise KeyError(
+            'Spider not found: {}'.format(self._full_spider_name(spider_name)))
+
+    def find_by_request(self, request):
+        pass
+
+    def list(self):
+        pass
+
+    def _update_repo(self):
+        subprocess.call(['git', 'checkout', self.branch], cwd=self.folder)
+        subprocess.call(['git', 'pull'], cwd=self.folder)
+
+    def _full_spider_name(self, spider_name):
+        return '{}/{}'.format(self.namespace, spider_name)
 
 
 @implementer(ISpiderLoader)
