@@ -1,10 +1,62 @@
 import click
 import datetime
 import os
+import time
+import heapq
 
 import skyscraper.db
 import skyscraper.mail
 import skyscraper.execution
+
+
+@click.command(name='skyscraper-service')
+def skyscraper_service():
+    """Runs the skyscraper service which determines when spiders have to be
+    executed and executes them"""
+
+    spiders = {}
+    already_found = set()
+    next_scheduled_runtimes = []
+
+    try:
+        while True:
+            # TODO: Update git repository and add new spiders/update existing
+            # ones in memory
+            # TODO: We now fill it with dummy value
+            spiders['project/spider'] = {
+                'project': 'project',
+                'name': 'spider',
+                'recurrency_minutes': 1,
+                'use_tor': False,
+            }
+            # only create a new scheduled runtime if spider was newly found
+            if 'project/spider' not in already_found:
+                already_found.add('project/spider')
+                heapq.heappush(
+                    next_scheduled_runtimes,
+                    (datetime.datetime.utcnow(), 'project/spider'))
+
+            item = heapq.heappop(next_scheduled_runtimes)
+
+            if datetime.datetime.utcnow() < item[0]:
+                heapq.heappush(next_scheduled_runtimes, item)
+            else:
+                print(item)
+                # if there is a recurrency defined of the spider, schedule it again
+                recurrency = spiders['project/spider']['recurrency_minutes']
+                print(spiders['project/spider'])
+                print(recurrency)
+
+                if recurrency:
+                    print('Scheduling spider again')
+                    next_runtime = datetime.datetime.utcnow() \
+                        + datetime.timedelta(minutes=recurrency)
+                    heapq.heappush(
+                        next_scheduled_runtimes, (next_runtime, 'project/spider'))
+
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print('Shutdown requested by user.')
 
 
 @click.group()

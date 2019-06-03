@@ -33,5 +33,6 @@ setup(
     entry_points='''
         [console_scripts]
         skyscraper=skyscraper.commands:skyscrapercli
+        skyscraper-service=skyscraper.commands:skyscraper_service
     ''',
 )
