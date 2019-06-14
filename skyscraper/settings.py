@@ -97,6 +97,11 @@ MAIL_FROM = 'noreply@molescrape.com'
 MAIL_TEMPLATE_BUCKET = os.environ.get('MAIL_TEMPLATE_BUCKET')
 MAIL_TEMPLATE_PREFIX = os.environ.get('MAIL_TEMPLATE_PREFIX')
 
+GIT_REPOSITORY = os.environ.get('SKYSCRAPER_GIT_REPOSITORY')
+GIT_WORKDIR = os.environ.get('SKYSCRAPER_GIT_WORKDIR')
+GIT_SUBFOLDER = os.environ.get('SKYSCRAPER_GIT_SUBFOLDER')
+GIT_BRANCH = os.environ.get('SKYSCRAPER_GIT_BRANCH')
+
 if os.environ.get('STATS_CLASS'):
     STATS_CLASS = os.environ.get('STATS_CLASS')
 

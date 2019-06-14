@@ -3,14 +3,14 @@ import subprocess
 import datetime
 import heapq
 import collections
+import logging
 
 
 class SkyscraperRunner(object):
-    def __init__(self, spider_loader, spider_runner):
+    def __init__(self, spider_runner):
         self.next_scheduled_runtimes = []
         self.spider_config = collections.defaultdict(dict)
 
-        self.spider_loader = spider_loader
         self.spider_runner = spider_runner
 
     def update_spider_config(self, configs):
@@ -47,6 +47,9 @@ class SkyscraperRunner(object):
 
             # if there is a recurrency defined, schedule it again
             if config.recurrency_minutes:
+                logging.debug('Rescheduling spider {}/{} in {} min.'.format(
+                    project, spider, config.recurrency_minutes))
+
                 next_runtime = datetime.datetime.utcnow() \
                     + datetime.timedelta(minutes=config.recurrency_minutes)
                 heapq.heappush(

@@ -4,13 +4,15 @@ import importlib
 import inspect
 import scrapy
 import logging
-import yaml
+
+import skyscraper.config
 
 
 class DeclarativeRepository(object):
-    def __init__(self, repo_path, workdir, branch='master'):
+    def __init__(self, repo_path, workdir, subfolder='', branch='master'):
         self.repo_path = repo_path
         self.workdir = workdir
+        self.spiderdir = os.path.join(self.workdir, subfolder)
         self.branch = branch
 
         print(repo_path)
@@ -22,25 +24,33 @@ class DeclarativeRepository(object):
         """Iterates all spiders and yields pairs of (project, spider)"""
 
         if project is None:
-            for project in self._iterate_project_folders(self.workdir):
+            for project in self._iterate_project_folders(self.spiderdir):
                 for project, spider in self.iterate_spiders(project):
                     yield project, spider
         else:
-            project_dir = os.path.join(self.workdir, project)
+            project_dir = os.path.join(self.spiderdir, project)
             for filename in next(os.walk(project_dir))[2]:
+                if not filename.endswith('.py'):
+                    continue
+
                 spider = os.path.splitext(filename)[0]
 
                 if self._validate_spider(project, spider):
                     yield (project, spider)
 
     def get_config(self, project, spider):
-        configfile = os.path.join(self.workdir, project, spider + '.yml')
+        configfile = os.path.join(self.spiderdir, project, spider + '.yml')
 
         with open(configfile, 'r') as f:
-            return yaml.safe_load(f)
+            return skyscraper.config.load(f)
+
+    def get_all_configs(self):
+        configs = [self.get_config(project, spider)
+                   for project, spider in self.iterate_spiders()]
+        return configs
 
     def load_spider(self, project, spider):
-        spiderfile = os.path.join(self.workdir, project, spider + '.py')
+        spiderfile = os.path.join(self.spiderdir, project, spider + '.py')
 
         spec = importlib.util.spec_from_file_location(
             'skyscraper.spiders.{}.{}'.format(project, spider), spiderfile)
@@ -64,8 +74,9 @@ class DeclarativeRepository(object):
             'Spider not found: {}/{}'.format(project, spider))
 
     def _validate_spider(self, project, spider):
-        # TODO: Implement
-        return True
+        configfile = os.path.join(self.spiderdir, project, spider + '.yml')
+
+        return os.path.isfile(configfile)
 
     def _update_repo(self):
         # TODO: Check if was already cloned

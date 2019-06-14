@@ -38,6 +38,11 @@ def gitfolder():
         f.write('class MySpider(scrapy.Spider):\n')
         f.write('    name = "myspider"\n')
 
+    configfile = os.path.join(path, 'myproject', 'myspider.yml')
+    with open(configfile, 'w') as f:
+        f.write('project: myproject\n')
+        f.write('spider: myspider\n')
+
     subprocess.call(['git', 'add', '.'], cwd=path)
     subprocess.call(['git', 'commit', '-m', 'add sample spider'], cwd=path)
 

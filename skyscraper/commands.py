@@ -2,59 +2,41 @@ import click
 import datetime
 import os
 import time
-import heapq
+import logging
 
-import skyscraper.db
-import skyscraper.mail
 import skyscraper.execution
+import skyscraper.git
+import skyscraper.mail
+import skyscraper.settings
 
 
-@click.command(name='skyscraper-service')
+@click.command()
 def skyscraper_service():
     """Runs the skyscraper service which determines when spiders have to be
     executed and executes them"""
 
-    spiders = {}
-    already_found = set()
-    next_scheduled_runtimes = []
+    proxy = None
+    if os.environ.get('SKYSCRAPER_TOR_PROXY'):
+        proxy = os.environ.get('SKYSCRAPER_TOR_PROXY')
+
+    repo = skyscraper.git.DeclarativeRepository(
+        skyscraper.settings.GIT_REPOSITORY,
+        skyscraper.settings.GIT_WORKDIR,
+        skyscraper.settings.GIT_SUBFOLDER,
+        skyscraper.settings.GIT_BRANCH
+    )
+    spider_runner = skyscraper.execution.SpiderRunner(proxy)
+    runner = skyscraper.execution.SkyscraperRunner(spider_runner)
 
     try:
         while True:
-            # TODO: Update git repository and add new spiders/update existing
-            # ones in memory
-            # TODO: We now fill it with dummy value
-            spiders['project/spider'] = {
-                'project': 'project',
-                'name': 'spider',
-                'recurrency_minutes': 1,
-                'use_tor': False,
-            }
-            # only create a new scheduled runtime if spider was newly found
-            if 'project/spider' not in already_found:
-                already_found.add('project/spider')
-                heapq.heappush(
-                    next_scheduled_runtimes,
-                    (datetime.datetime.utcnow(), 'project/spider'))
+            configs = repo.get_all_configs()
+            runner.update_spider_config(configs)
 
-            item = heapq.heappop(next_scheduled_runtimes)
+            logging.debug('Running due spiders')
+            runner.run_due_spiders()
 
-            if datetime.datetime.utcnow() < item[0]:
-                heapq.heappush(next_scheduled_runtimes, item)
-            else:
-                print(item)
-                # if there is a recurrency defined of the spider, schedule it again
-                recurrency = spiders['project/spider']['recurrency_minutes']
-                print(spiders['project/spider'])
-                print(recurrency)
-
-                if recurrency:
-                    print('Scheduling spider again')
-                    next_runtime = datetime.datetime.utcnow() \
-                        + datetime.timedelta(minutes=recurrency)
-                    heapq.heappush(
-                        next_scheduled_runtimes, (next_runtime, 'project/spider'))
-
-            time.sleep(1)
+            time.sleep(15)
     except KeyboardInterrupt:
         print('Shutdown requested by user.')
 
