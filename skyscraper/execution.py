@@ -1,5 +1,60 @@
 import os
 import subprocess
+import datetime
+import heapq
+import collections
+
+
+class SkyscraperRunner(object):
+    def __init__(self, spider_loader, spider_runner):
+        self.next_scheduled_runtimes = []
+        self.spider_config = collections.defaultdict(dict)
+
+        self.spider_loader = spider_loader
+        self.spider_runner = spider_runner
+
+    def update_spider_config(self, configs):
+        for config in configs:
+            self.spider_config[config.project][config.spider] = config
+
+            if not self._spider_already_scheduled(
+                    config.project, config.spider):
+                heapq.heappush(self.next_scheduled_runtimes,
+                    (datetime.datetime.utcnow(),
+                    (config.project, config.spider)))
+
+    def run_due_spiders(self):
+        # heaps are sorted in python
+        # https://docs.python.org/3.1/library/heapq.html
+        while datetime.datetime.utcnow() > self.next_scheduled_runtimes[0][0]:
+            item = heapq.heappop(self.next_scheduled_runtimes)
+            project, spider = item[1]
+
+            self.spider_runner.run(project, spider)
+
+            self._reschedule_spider(project, spider)
+
+    def _spider_already_scheduled(self, project, spider):
+        for _, (p, s) in self.next_scheduled_runtimes:
+            if p == project and s == spider:
+                return True
+
+        return False
+
+    def _reschedule_spider(self, project, spider):
+        try:
+            config = self.spider_config[project][spider]
+
+            # if there is a recurrency defined, schedule it again
+            if config.recurrency_minutes:
+                next_runtime = datetime.datetime.utcnow() \
+                    + datetime.timedelta(minutes=config.recurrency_minutes)
+                heapq.heappush(
+                    self.next_scheduled_runtimes,
+                    (next_runtime, (project, spider)))
+        except KeyError:
+            # spider was removed, do not schedule again
+            pass
 
 
 class SpiderRunner(object):

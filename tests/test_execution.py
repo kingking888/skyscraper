@@ -1,0 +1,33 @@
+import collections
+
+from skyscraper.config import Configuration
+from skyscraper.execution import SkyscraperRunner
+
+
+class MockSpiderRunner(object):
+    def __init__(self):
+        self.spiders_run = collections.defaultdict(dict)
+
+    def run(self, project, spider):
+        self.spiders_run[project][spider] = True
+
+
+class MockSpiderLoader(object):
+    def load(self, spider_name):
+        return None
+
+
+def test_skyscraper_runner_runs_due_spiders():
+    spider_runner = MockSpiderRunner()
+    spider_loader = MockSpiderLoader()
+
+    skyscraper_runner = SkyscraperRunner(spider_loader, spider_runner)
+
+    c = Configuration('my-project', 'my-spider')
+    c.recurrency_minutes = 120
+
+    skyscraper_runner.update_spider_config([c])
+
+    skyscraper_runner.run_due_spiders()
+
+    assert spider_runner.spiders_run['my-project']['my-spider'] is True
