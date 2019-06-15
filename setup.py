@@ -28,6 +28,7 @@ setup(
         'click',
         'pandas',
         'requests',
+        'pyyaml',
     ],
     extras_require=extras,
     entry_points='''
