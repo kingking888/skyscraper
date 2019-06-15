@@ -30,6 +30,7 @@ def skyscraper_service():
 
     try:
         while True:
+            repo.update()
             configs = repo.get_all_configs()
             runner.update_spider_config(configs)
 

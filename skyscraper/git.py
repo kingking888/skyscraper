@@ -8,6 +8,10 @@ import logging
 import skyscraper.config
 
 
+class RepositoryException(Exception):
+    pass
+
+
 class DeclarativeRepository(object):
     def __init__(self, repo_path, workdir, subfolder='', branch='master'):
         self.repo_path = repo_path
@@ -15,10 +19,7 @@ class DeclarativeRepository(object):
         self.spiderdir = os.path.join(self.workdir, subfolder)
         self.branch = branch
 
-        print(repo_path)
-        print(workdir)
-
-        self._update_repo()
+        self.update()
 
     def iterate_spiders(self, project=None):
         """Iterates all spiders and yields pairs of (project, spider)"""
@@ -73,17 +74,24 @@ class DeclarativeRepository(object):
         raise KeyError(
             'Spider not found: {}/{}'.format(project, spider))
 
+    def update(self):
+        # If the folder is empty, clone the repository
+        # otherwise check whether this actually is a clone of the
+        # defined source repository or something entirely different
+        if len(os.listdir(self.workdir)) == 0:
+            subprocess.call(['git', 'clone', self.repo_path, self.workdir])
+        elif not self._check_remote():
+            raise RepositoryException(
+                'It seems this is not a repository cloned from {}'.format(
+                    self.repo_path))
+
+        subprocess.call(['git', 'checkout', self.branch], cwd=self.workdir)
+        subprocess.call(['git', 'pull'], cwd=self.workdir)
+
     def _validate_spider(self, project, spider):
         configfile = os.path.join(self.spiderdir, project, spider + '.yml')
 
         return os.path.isfile(configfile)
-
-    def _update_repo(self):
-        # TODO: Check if was already cloned
-        subprocess.call(['git', 'clone', self.repo_path, self.workdir])
-
-        subprocess.call(['git', 'checkout', self.branch], cwd=self.workdir)
-        subprocess.call(['git', 'pull'], cwd=self.workdir)
 
     def _iterate_project_folders(self, directory):
         for candidate in os.listdir(directory):
@@ -91,3 +99,12 @@ class DeclarativeRepository(object):
                     and candidate != '.git':
 
                 yield candidate
+
+    def _check_remote(self):
+        p = subprocess.Popen(
+            ['git', 'remote', '-v'],
+            stdout=subprocess.PIPE,
+            cwd=self.workdir)
+        output, err = p.communicate()
+
+        return self.repo_path in str(output)
