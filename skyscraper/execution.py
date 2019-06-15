@@ -15,10 +15,13 @@ class SkyscraperRunner(object):
 
     def update_spider_config(self, configs):
         for config in configs:
-            self.spider_config[config.project][config.spider] = config
+            if self._has_new_config(config.project, config.spider, config):
+                self.spider_config[config.project][config.spider] = config
 
-            if not self._spider_already_scheduled(
-                    config.project, config.spider):
+                # TODO: When pushing a spider due to new configuration
+                # all previous schedules of the same spider have to be removed
+                # from the schedule (otherwise they will trigger reschedules
+                # over and over)
                 heapq.heappush(self.next_scheduled_runtimes,
                     (datetime.datetime.utcnow(),
                     (config.project, config.spider)))
@@ -26,7 +29,9 @@ class SkyscraperRunner(object):
     def run_due_spiders(self):
         # heaps are sorted in python
         # https://docs.python.org/3.1/library/heapq.html
-        while datetime.datetime.utcnow() > self.next_scheduled_runtimes[0][0]:
+        while len(self.next_scheduled_runtimes) > 0 \
+                and datetime.datetime.utcnow() > self.next_scheduled_runtimes[0][0]:
+
             item = heapq.heappop(self.next_scheduled_runtimes)
             project, spider = item[1]
 
@@ -34,12 +39,13 @@ class SkyscraperRunner(object):
 
             self._reschedule_spider(project, spider)
 
-    def _spider_already_scheduled(self, project, spider):
-        for _, (p, s) in self.next_scheduled_runtimes:
-            if p == project and s == spider:
-                return True
-
-        return False
+    def _has_new_config(self, project, spider, config):
+        try:
+            old_conf = self.spider_config[project][spider]
+            return hash(config) != hash(old_conf)
+        except KeyError:
+            # does not exist yet = is new config
+            return True
 
     def _reschedule_spider(self, project, spider):
         try:

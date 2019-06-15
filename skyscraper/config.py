@@ -11,9 +11,9 @@ class Configuration(object):
     @classmethod
     def from_dict(cls, d):
         if 'project' not in d:
-            raise YamlException('Field "project" is required in config file')
+            raise YamlException('Field "project" is required in config')
         if 'spider' not in d:
-            raise YamlException('Field "spider" is required in config file')
+            raise YamlException('Field "spider" is required in config')
 
         c = cls(d['project'], d['spider'])
 
@@ -22,11 +22,28 @@ class Configuration(object):
 
         return c
 
+    def __eq__(self, other):
+        return self.project == other.project \
+            and self.spider == other.spider \
+            and self.recurrency_minutes == other.recurrency_minutes \
+            and self.use_tor == other.use_tor
+
+    def __hash__(self):
+        return hash((self.project, self.spider, self.recurrency_minutes,
+                     self.use_tor))
+
 
 class YamlException(Exception):
     pass
 
 
-def load(f):
+def load(f, project, spider):
     d = yaml.safe_load(f)
+
+    if d is None:
+        d = {}
+
+    d['project'] = project
+    d['spider'] = spider
+
     return Configuration.from_dict(d)

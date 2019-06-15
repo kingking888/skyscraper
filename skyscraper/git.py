@@ -42,7 +42,7 @@ class DeclarativeRepository(object):
         configfile = os.path.join(self.spiderdir, project, spider + '.yml')
 
         with open(configfile, 'r') as f:
-            return skyscraper.config.load(f)
+            return skyscraper.config.load(f, project, spider)
 
     def get_all_configs(self):
         configs = [self.get_config(project, spider)
