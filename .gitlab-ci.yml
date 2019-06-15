@@ -14,36 +14,23 @@ test:
   stage: test
   before_script:
     # Setup requirements
-    - apt-get update -y && apt-get install -y postgresql-client
     - python -V
     - pip install virtualenv
     - virtualenv venv
     - source venv/bin/activate
-    # Setup the SQL database
-    - git clone https://github.com/molescrape/molescrape-database.git
-    - psql -U postgres -h postgres -c 'CREATE DATABASE molescrape'
-    - bash molescrape-database/postgres/create_tables.sh postgres molescrape postgres
-    - export SKYSCRAPER_UNITTEST_CONNSTRING='host=postgres user=postgres dbname=molescrape'
-  script:
     - pip install tox
+  script:
     - tox
-  services:
-    - name: postgres
-      alias: postgres
 
 integration-test:
   stage: integration-test
   before_script:
     # Setup requirements
-    - apt-get update -y && apt-get install -y postgresql-client awscli bats
+    - apt-get update -y && apt-get install -y awscli bats
     - python -V
     - pip install virtualenv
     - virtualenv venv
     - source venv/bin/activate
-    # Setup the SQL database
-    - git clone https://github.com/molescrape/molescrape-database.git
-    - psql -U postgres -h postgres -c 'CREATE DATABASE molescrape'
-    - bash molescrape-database/postgres/create_tables.sh postgres molescrape postgres
     # Setup skyscraper
     - pip install -r requirements.txt
     - pip install -U grpcio  # trouble with grpcio version
@@ -57,9 +44,6 @@ integration-test:
     - echo -e "[default]\naws_access_key_id = $SKYSCRAPER_TESTING_ACCESS_KEY_ID\naws_secret_access_key = $SKYSCRAPER_TESTING_SECRET_ACCESS_KEY\n" > $HOME/.aws/credentials
   script:
     - bats integration-tests/
-  services:
-    - name: postgres
-      alias: postgres
 
 sonarqube:
   stage: sonarqube

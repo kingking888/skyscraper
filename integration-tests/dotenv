@@ -1,7 +1,7 @@
 PIPELINE_USE_DUPLICATESFILTER=0
 PIPELINE_USE_OUTPUT_S3=1
 
-SPIDER_LOADER_CLASS='skyscraper.spiderloader.PostgresSpiderLoader'
+SPIDER_LOADER_CLASS='skyscraper.spiderloader.FolderSpiderLoader'
 S3_DATA_BUCKET='skyscraper-testing-data'
 POSTGRES_CONNSTRING='host=postgres user=postgres dbname=molescrape'
 
@@ -10,6 +10,3 @@ SCHEDULER_REDIS_QUEUE_HOST=''
 SCHEDULER_REDIS_BATCH_SIZE=500
 
 PIDAR_URL=''
-
-MQTT_HOST=''
-MQTT_PORT=1883
