@@ -4,6 +4,7 @@ import subprocess
 import os
 import shutil
 
+from skyscraper.git import DeclarativeRepository
 from skyscraper.spiderloader import GitSpiderLoader
 
 
@@ -50,7 +51,15 @@ def gitfolder():
 
 
 def test_load_spider_from_postgres(gitfolder):
-    loader = GitSpiderLoader(gitfolder, 'myproject', branch='production')
+    workdir = tempfile.mkdtemp()
+
+    git_repo = DeclarativeRepository(
+        gitfolder,
+        workdir,
+        branch='production')
+    loader = GitSpiderLoader(git_repo, 'myproject')
     spider = loader.load('myspider')
 
     assert spider.name == 'myspider'
+
+    shutil.rmtree(workdir)
