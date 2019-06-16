@@ -33,80 +33,29 @@ ITEM_PIPELINES = {
     'skyscraper.pipelines.metainfo.AddCrawlTimePipeline': 102,
 }
 
-if os.environ.get('PIPELINE_USE_DUPLICATESFILTER_DYNAMODB') \
-        and int(os.environ.get('PIPELINE_USE_DUPLICATESFILTER_DYNAMODB')):
+if os.environ.get('SKYSCRAPER_PIPELINE_USE_DUPLICATESFILTER_DYNAMODB') \
+        and int(os.environ.get('SKYSCRAPER_PIPELINE_USE_DUPLICATESFILTER_DYNAMODB')):
     ITEM_PIPELINES['skyscraper.pipelines.aws.DoNotStoreDuplicatesPipeline'] = 200
 
     # should be immediately after SaveDataPipeline
-    ITEM_PIPELINES['skyscraper.pipelines.aws.StoreItemToDuplicateFilterPipeline'] \
-        = 301
+    ITEM_PIPELINES['skyscraper.pipelines.aws.StoreItemToDuplicateFilterPipeline'] = 301
 
-if os.environ.get('PIPELINE_USE_OUTPUT_MQTT') \
-        and int(os.environ.get('PIPELINE_USE_OUTPUT_MQTT')):
-    ITEM_PIPELINES['skyscraper.pipelines.mqtt.MqttOutputPipeline'] = 210
-
-if os.environ.get('PIPELINE_USE_OUTPUT_REDIS') \
-        and int(os.environ.get('PIPELINE_USE_OUTPUT_REDIS')):
-    ITEM_PIPELINES['skyscraper.pipelines.redis.RedisOutputPipeline'] = 220
-
-if os.environ.get('PIPELINE_USE_OUTPUT_S3') \
-        and int(os.environ.get('PIPELINE_USE_OUTPUT_S3')):
-    ITEM_PIPELINES['skyscraper.pipelines.aws.SaveDataToS3Pipeline'] = 300
-
-if os.environ.get('PIPELINE_USE_OUTPUT_POSTGRES') \
-        and int(os.environ.get('PIPELINE_USE_OUTPUT_POSTGRES')):
-    ITEM_PIPELINES['skyscraper.pipelines.postgres.SaveDataToPostgresPipeline'] = 300
-
-if os.environ.get('PIPELINE_USE_OUTPUT_FOLDER') \
-        and int(os.environ.get('PIPELINE_USE_OUTPUT_FOLDER')):
+if os.environ.get('SKYSCRAPER_PIPELINE_USE_OUTPUT_FOLDER') \
+        and int(os.environ.get('SKYSCRAPER_PIPELINE_USE_OUTPUT_FOLDER')):
     ITEM_PIPELINES['skyscraper.pipelines.filesystem.SaveDataToFolderPipeline'] = 300
     SKYSCRAPER_STORAGE_FOLDER_PATH = os.environ.get('SKYSCRAPER_STORAGE_FOLDER_PATH')
 
-# Item count must come shortly after the storage plugins to make sure that
-# items that fail on or before storage are not counted and items that work
-# on storage get counted
-if os.environ.get('PIPELINE_USE_ITEMCOUNT_POSTGRES') \
-        and int(os.environ.get('PIPELINE_USE_ITEMCOUNT_POSTGRES')):
-    ITEM_PIPELINES['skyscraper.pipelines.postgres.CountItemsPostgresPipeline'] = 310
-
-PIDAR_URL = os.environ.get('PIDAR_URL')
-if os.environ.get('PIDAR_URL'):
-    ITEM_PIPELINES['skyscraper.pipelines.monitoring.PidarMonitoringPipeline'] = 320
-
-
-# Connection to PostgreSQL database
-DB_CONN = os.environ.get('DB_CONN')
-POSTGRES_CONNSTRING = os.environ.get('POSTGRES_CONNSTRING')
-
 # Connection to AWS
-AWS_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_ACCESS_KEY = os.environ.get('SKYSCRAPER_AWS_ACCESS_KEY')
+AWS_SECRET_ACCESS_KEY = os.environ.get('SKYSCRAPER_AWS_SECRET_ACCESS_KEY')
 
-SPIDER_LOADER_CLASS = os.environ.get('SPIDER_LOADER_CLASS')
-SPIDERS_FOLDER = os.environ.get('SPIDERS_FOLDER')
+SPIDER_LOADER_CLASS = os.environ.get('SKYSCRAPER_SPIDER_LOADER_CLASS')
+SPIDERS_FOLDER = os.environ.get('SKYSCRAPER_SPIDERS_FOLDER')
 
-S3_SPIDERS_BUCKET = os.environ.get('S3_SPIDERS_BUCKET')
-S3_DATA_BUCKET = os.environ.get('S3_DATA_BUCKET')
-DYNAMODB_CRAWLING_INDEX = os.environ.get('DYNAMODB_CRAWLING_INDEX')
-DYNAMODB_CRAWLING_OPTIONS = os.environ.get('DYNAMODB_CRAWLING_OPTIONS')
-
-MAIL_SERVER = os.environ.get('MAIL_SERVER')
-MAIL_USER = os.environ.get('MAIL_USER')
-MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-MAIL_FROM = 'noreply@molescrape.com'
-MAIL_TEMPLATE_BUCKET = os.environ.get('MAIL_TEMPLATE_BUCKET')
-MAIL_TEMPLATE_PREFIX = os.environ.get('MAIL_TEMPLATE_PREFIX')
+DYNAMODB_CRAWLING_INDEX = os.environ.get('SKYSCRAPER_DYNAMODB_CRAWLING_INDEX')
+DYNAMODB_CRAWLING_OPTIONS = os.environ.get('SKYSCRAPER_DYNAMODB_CRAWLING_OPTIONS')
 
 GIT_REPOSITORY = os.environ.get('SKYSCRAPER_GIT_REPOSITORY')
 GIT_WORKDIR = os.environ.get('SKYSCRAPER_GIT_WORKDIR')
 GIT_SUBFOLDER = os.environ.get('SKYSCRAPER_GIT_SUBFOLDER')
 GIT_BRANCH = os.environ.get('SKYSCRAPER_GIT_BRANCH')
-
-if os.environ.get('STATS_CLASS'):
-    STATS_CLASS = os.environ.get('STATS_CLASS')
-
-# Overwrite default scheduler if defined by user
-if os.environ.get('SCHEDULER'):
-    SCHEDULER = os.environ.get('SCHEDULER')
-    SCHEDULER_POSTGRES_BATCH_SIZE = \
-        int(os.environ.get('SCHEDULER_POSTGRES_BATCH_SIZE'))
