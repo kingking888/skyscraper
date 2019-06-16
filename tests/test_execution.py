@@ -8,7 +8,7 @@ class MockSpiderRunner(object):
     def __init__(self):
         self.spiders_run = collections.defaultdict(dict)
 
-    def run(self, project, spider):
+    def run_standalone(self, project, spider):
         self.spiders_run[project][spider] = True
 
 
