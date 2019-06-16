@@ -33,7 +33,7 @@ setup(
     extras_require=extras,
     entry_points='''
         [console_scripts]
-        skyscraper=skyscraper.commands:skyscrapercli
-        skyscraper-service=skyscraper.commands:skyscraper_service
+        skyscraper=skyscraper.commands:skyscraper_service
+        skyscraper-spider=skyscraper.commands:skyscraper_spider
     ''',
 )

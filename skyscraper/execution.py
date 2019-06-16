@@ -35,7 +35,7 @@ class SkyscraperRunner(object):
             item = heapq.heappop(self.next_scheduled_runtimes)
             project, spider = item[1]
 
-            self.spider_runner.run(project, spider)
+            self.spider_runner.run_standalone(project, spider)
 
             self._reschedule_spider(project, spider)
 
@@ -73,6 +73,18 @@ class SpiderRunner(object):
     """
     def __init__(self, http_proxy):
         self.http_proxy = http_proxy
+
+    def run_standalone(self, namespace, spider, options={}):
+        command = [
+            'skyscraper-spider',
+            namespace,
+            spider,
+        ]
+
+        if 'tor' in options and options['tor']:
+            command.append('--use-tor')
+
+        subprocess.call(command)
 
     def run(self, namespace, spider, semaphore=None, options={}):
         """Run the given spider with the defined options. Will block
