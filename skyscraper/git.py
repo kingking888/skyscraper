@@ -79,14 +79,24 @@ class DeclarativeRepository(object):
         # otherwise check whether this actually is a clone of the
         # defined source repository or something entirely different
         if len(os.listdir(self.workdir)) == 0:
-            subprocess.call(['git', 'clone', self.repo_path, self.workdir])
+            subprocess.call(
+                ['git', 'clone', self.repo_path, self.workdir],
+                stdout=subprocess.DEVNULL)
         elif not self._check_remote():
             raise RepositoryException(
                 'It seems this is not a repository cloned from {}'.format(
                     self.repo_path))
 
-        subprocess.call(['git', 'checkout', self.branch], cwd=self.workdir)
-        subprocess.call(['git', 'pull'], cwd=self.workdir)
+        # only switch branch if we are on a different branch
+        # otherwise we get "Already on [branch]" on stderr
+        if self._current_branch() != self.branch:
+            subprocess.call(
+                ['git', 'checkout', self.branch], cwd=self.workdir,
+                stdout=subprocess.DEVNULL)
+
+        subprocess.call(
+            ['git', 'pull'], cwd=self.workdir,
+            stdout=subprocess.DEVNULL)
 
     def _validate_spider(self, project, spider):
         configfile = os.path.join(self.spiderdir, project, spider + '.yml')
@@ -107,4 +117,13 @@ class DeclarativeRepository(object):
             cwd=self.workdir)
         output, err = p.communicate()
 
-        return self.repo_path in str(output)
+        return self.repo_path in output.decode('utf-8')
+
+    def _current_branch(self):
+        p = subprocess.Popen(
+            ['git', 'symbolic-ref', '--short', 'HEAD'],
+            stdout=subprocess.PIPE,
+            cwd=self.workdir)
+        output, err = p.communicate()
+
+        return output.decode('utf-8').strip()
