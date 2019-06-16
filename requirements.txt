@@ -9,6 +9,7 @@ html5lib
 # requests is required to send pidar notification
 requests
 pyyaml
+prometheus_client
 
 # extras
 boto3

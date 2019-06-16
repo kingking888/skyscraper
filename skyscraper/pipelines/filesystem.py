@@ -19,8 +19,11 @@ class SaveDataToFolderPipeline(object):
         return cls(folder, namespace)
 
     def process_item(self, item, spider):
+        target_dir = os.path.join(self.folder, self.namespace, spider.name)
+        os.makedirs(target_dir, exist_ok=True)
+
         random_id = str(uuid.uuid4())
-        target_file = os.path.join(self.folder, '{}.json'.format(random_id))
+        target_file = os.path.join(target_dir, '{}.json'.format(random_id))
 
         ie = self._get_exporter()
         exported = ie.export_item(item)

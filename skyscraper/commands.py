@@ -2,17 +2,24 @@ import click
 import os
 import time
 import logging
+import prometheus_client
 
 import skyscraper.execution
 import skyscraper.git
 import skyscraper.mail
 import skyscraper.settings
+import skyscraper.instrumentation
 
 
 @click.command()
 def skyscraper_service():
     """Runs the skyscraper service which determines when spiders have to be
     executed and executes them"""
+
+    prometheus_client.start_http_server(8000)
+    prometheus_num_configs = prometheus_client.Gauge(
+        'skyscraper_git_spiders',
+        'Number of spiders available in the Skyscraper git repository')
 
     proxy = None
     if os.environ.get('SKYSCRAPER_TOR_PROXY'):
@@ -29,8 +36,11 @@ def skyscraper_service():
 
     try:
         while True:
+            skyscraper.instrumentation.instrument_num_files()
+
             repo.update()
             configs = repo.get_all_configs()
+            prometheus_num_configs.set(len(configs))
             runner.update_spider_config(configs)
 
             logging.debug('Running due spiders')

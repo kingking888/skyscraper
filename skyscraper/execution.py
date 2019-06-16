@@ -4,6 +4,12 @@ import datetime
 import heapq
 import collections
 import logging
+import prometheus_client
+
+
+SPIDERS_EXECUTED_COUNT = prometheus_client.Counter(
+    'skyscraper_executed_spiders',
+    'Counter for the number of executed spiders')
 
 
 class SkyscraperRunner(object):
@@ -12,6 +18,7 @@ class SkyscraperRunner(object):
         self.spider_config = collections.defaultdict(dict)
 
         self.spider_runner = spider_runner
+
 
     def update_spider_config(self, configs):
         for config in configs:
@@ -35,6 +42,7 @@ class SkyscraperRunner(object):
             item = heapq.heappop(self.next_scheduled_runtimes)
             project, spider = item[1]
 
+            SPIDERS_EXECUTED_COUNT.inc()
             self.spider_runner.run_standalone(project, spider)
 
             self._reschedule_spider(project, spider)

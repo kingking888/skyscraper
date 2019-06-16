@@ -29,6 +29,7 @@ setup(
         'pandas',
         'requests',
         'pyyaml',
+        'prometheus_client',
     ],
     extras_require=extras,
     entry_points='''
