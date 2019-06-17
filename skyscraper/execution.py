@@ -19,9 +19,11 @@ class SkyscraperRunner(object):
 
         self.spider_runner = spider_runner
 
-
     def update_spider_config(self, configs):
         for config in configs:
+            if not config.enabled:
+                continue
+
             if self._has_new_config(config.project, config.spider, config):
                 self.spider_config[config.project][config.spider] = config
 

@@ -7,6 +7,7 @@ class Configuration(object):
         self.spider = spider
         self.recurrency_minutes = None
         self.use_tor = False
+        self.enabled = False
 
     @classmethod
     def from_dict(cls, d):
@@ -19,6 +20,7 @@ class Configuration(object):
 
         c.recurrency_minutes = d.get('recurrency_minutes', None)
         c.use_tor = d.get('use_tor', False)
+        c.enabled = d.get('enabled', False)
 
         return c
 
