@@ -61,13 +61,13 @@ class SkyscraperRunner(object):
         try:
             config = self.spider_config[project][spider]
 
-            # if there is a recurrency defined, schedule it again
-            if config.recurrency_minutes:
+            # if there is a recurrence defined, schedule it again
+            if config.recurrence_minutes:
                 logging.debug('Rescheduling spider {}/{} in {} min.'.format(
-                    project, spider, config.recurrency_minutes))
+                    project, spider, config.recurrence_minutes))
 
                 next_runtime = datetime.datetime.utcnow() \
-                    + datetime.timedelta(minutes=config.recurrency_minutes)
+                    + datetime.timedelta(minutes=config.recurrence_minutes)
                 heapq.heappush(
                     self.next_scheduled_runtimes,
                     (next_runtime, (project, spider)))

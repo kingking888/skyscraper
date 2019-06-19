@@ -5,7 +5,7 @@ class Configuration(object):
     def __init__(self, project, spider):
         self.project = project
         self.spider = spider
-        self.recurrency_minutes = None
+        self.recurrence_minutes = None
         self.use_tor = False
         self.enabled = False
 
@@ -18,7 +18,7 @@ class Configuration(object):
 
         c = cls(d['project'], d['spider'])
 
-        c.recurrency_minutes = d.get('recurrency_minutes', None)
+        c.recurrence_minutes = d.get('recurrence_minutes', None)
         c.use_tor = d.get('use_tor', False)
         c.enabled = d.get('enabled', False)
 
@@ -27,11 +27,11 @@ class Configuration(object):
     def __eq__(self, other):
         return self.project == other.project \
             and self.spider == other.spider \
-            and self.recurrency_minutes == other.recurrency_minutes \
+            and self.recurrence_minutes == other.recurrence_minutes \
             and self.use_tor == other.use_tor
 
     def __hash__(self):
-        return hash((self.project, self.spider, self.recurrency_minutes,
+        return hash((self.project, self.spider, self.recurrence_minutes,
                      self.use_tor))
 
 

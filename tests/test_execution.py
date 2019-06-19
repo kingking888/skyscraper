@@ -18,7 +18,7 @@ def test_skyscraper_runner_runs_due_spiders():
     skyscraper_runner = SkyscraperRunner(spider_runner)
 
     c = Configuration('my-project', 'my-spider')
-    c.recurrency_minutes = 120
+    c.recurrence_minutes = 120
     c.enabled = True
 
     skyscraper_runner.update_spider_config([c])
