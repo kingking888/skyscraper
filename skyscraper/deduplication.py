@@ -39,4 +39,4 @@ class DiskTrieDuplicatesFilter(object):
     # for some situations the first 100 bytes might always be
     # the same and for others only the first 2
     def _determine_bucket(self, word):
-        return word[0:10]
+        return word[0:30]

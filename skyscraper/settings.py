@@ -33,6 +33,12 @@ ITEM_PIPELINES = {
     'skyscraper.pipelines.metainfo.AddCrawlTimePipeline': 102,
 }
 
+if os.environ.get('SKYSCRAPER_PIPELINE_USE_DUPLICATESFILTER_DISK') \
+        and int(os.environ.get('SKYSCRAPER_PIPELINE_USE_DUPLICATESFILTER_DISK')):
+    ITEM_PIPELINES['skyscraper.pipelines.filesystem.DiskDeduplicationPipeline'] = 200
+
+    DISK_DEDUPLICATION_FOLDER = os.environ.get('SKYSCRAPER_DISK_DEDUPLICATION_FOLDER')
+
 if os.environ.get('SKYSCRAPER_PIPELINE_USE_DUPLICATESFILTER_DYNAMODB') \
         and int(os.environ.get('SKYSCRAPER_PIPELINE_USE_DUPLICATESFILTER_DYNAMODB')):
     ITEM_PIPELINES['skyscraper.pipelines.aws.DoNotStoreDuplicatesPipeline'] = 200

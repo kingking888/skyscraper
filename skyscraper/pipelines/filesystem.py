@@ -3,6 +3,9 @@ import uuid
 import os
 
 from scrapy.exporters import PythonItemExporter
+from scrapy.exceptions import DropItem
+
+from skyscraper.deduplication import DiskTrieDuplicatesFilter
 
 
 class SaveDataToFolderPipeline(object):
@@ -34,3 +37,31 @@ class SaveDataToFolderPipeline(object):
 
     def _get_exporter(self, **kwargs):
         return PythonItemExporter(binary=False, **kwargs)
+
+
+class DiskDeduplicationPipeline(object):
+    """This is a pipeline step that checks whether an item has already been
+    scraped before. It will store item IDs into a deduplication filter and
+    check for all new items whether they are already in the filter list.
+    """
+    def __init__(self, duplicates_filter, namespace):
+        self.namespace = namespace
+        self.duplicates_filter = duplicates_filter
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        settings = crawler.settings
+
+        namespace = settings.get('USER_NAMESPACE')
+        folder = settings.get('DISK_DEDUPLICATION_FOLDER')
+
+        duplicates_filter = DiskTrieDuplicatesFilter(folder)
+        return cls(duplicates_filter, namespace)
+
+    def process_item(self, item, spider):
+        combined_id = '{}-{}'.format(self.namespace, item['id'])
+        if self.duplicates_filter.has_word(combined_id):
+            raise DropItem("URL '%s' with item ID '%s' has already been crawled" % (item['url'], item['id']))
+        else:
+            self.duplicates_filter.add_word(combined_id)
+            return item
