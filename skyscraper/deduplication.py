@@ -5,6 +5,7 @@
 # - strings might have a very long common prefix
 
 import os
+import hashlib
 
 
 class DiskTrieDuplicatesFilter(object):
@@ -35,8 +36,9 @@ class DiskTrieDuplicatesFilter(object):
 
         return False
 
-    # TODO: Fixed length prefix will not work well, because
-    # for some situations the first 100 bytes might always be
-    # the same and for others only the first 2
     def _determine_bucket(self, word):
-        return word[0:30]
+        # use the first two chars of the hash. This should produce a quite
+        # good distribution for our 2.5 GB (see above)
+        h = hashlib.sha256(word.encode('utf-8'))
+        digest = h.hexdigest()
+        return digest[0:2]
