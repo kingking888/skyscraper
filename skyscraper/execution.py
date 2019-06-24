@@ -6,6 +6,9 @@ import collections
 import logging
 import prometheus_client
 
+from scrapy.crawler import CrawlerProcess
+from scrapy.utils.project import get_project_settings
+
 
 SPIDERS_EXECUTED_COUNT = prometheus_client.Counter(
     'skyscraper_executed_spiders',
@@ -106,22 +109,12 @@ class SpiderRunner(object):
         if 'tor' in options and options['tor']:
             self._set_proxy_tor()
 
-        # TODO: can we do this directly within Python?
-        command = [
-            "scrapy",
-            "crawl",
-            spider,
-            "-s", "USER_NAMESPACE=%s" % (namespace),
-        ]
-
-        # set start_urls empty, so that scrapy does not start
-        # with the start_url again and instead do the backlog
-        if 'backlog' in options and options['backlog']:
-            command.append('-a')
-            command.append('start_urls=')
-
-        p = subprocess.Popen(command)
-        p.wait()
+        # Start the spider in this process
+        settings = get_project_settings()
+        settings['USER_NAMESPACE'] = namespace
+        process = CrawlerProcess(settings)
+        process.crawl(spider)
+        process.start()
 
         self._release_run_lock(semaphore)
 
