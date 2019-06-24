@@ -1,12 +1,9 @@
-PIPELINE_USE_DUPLICATESFILTER=0
-PIPELINE_USE_OUTPUT_S3=1
+SKYSCRAPER_PIPELINE_USE_DUPLICATESFILTER_DISK=0
 
-SPIDER_LOADER_CLASS='skyscraper.spiderloader.FolderSpiderLoader'
-S3_DATA_BUCKET='skyscraper-testing-data'
-POSTGRES_CONNSTRING='host=postgres user=postgres dbname=molescrape'
+SKYSCRAPER_PIPELINE_USE_OUTPUT_FOLDER=1
+SKYSCRAPER_STORAGE_FOLDER_PATH=/tmp/skyscraper-integration-tests/items
 
-SCHEDULER=''
-SCHEDULER_REDIS_QUEUE_HOST=''
-SCHEDULER_REDIS_BATCH_SIZE=500
-
-PIDAR_URL=''
+SKYSCRAPER_GIT_REPOSITORY=https://github.com/molescrape/spider-examples.git
+SKYSCRAPER_GIT_WORKDIR=/tmp/skyscraper-integration-tests/spiders
+SKYSCRAPER_GIT_SUBFOLDER=''
+SKYSCRAPER_GIT_BRANCH=master

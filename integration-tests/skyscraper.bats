@@ -1,28 +1,19 @@
 #!/usr/bin/env bats
 
 setup() {
-    mkdir -p /tmp/skyscraper-tests/git/testing
-    git init /tmp/skyscraper-tests/git
-    cp skyscraper/spiders/example.py /tmp/skyscraper-tests/git/testing/example.py
+    rm -rf /tmp/skyscraper-integration-tests
 
-    cd /tmp/skyscraper-tests/git
-    git add testing/example.py
-    git config --local user.name "Unit Test"
-    git config --local user.email "testing@molescrape.com"
-    git commit -m "add spider"
-
-    mkdir -p /tmp/skyscraper-tests/gitworkdir
+    mkdir -p /tmp/skyscraper-integration-tests/spiders
+    mkdir -p /tmp/skyscraper-integration-tests/items
 }
 
 teardown() {
-    rm -rf /tmp/skyscraper-tests
+    rm -rf /tmp/skyscraper-integration-tests
 }
 
 @test "crawl example.com with spider from git" {
-    # TODO
-    #skyscraper crawl-manual testing example
-    #count=$(aws s3 ls s3://skyscraper-testing-data/testing/example/ | wc -l)
+    skyscraper-spider onetime_spiders example
+    count=$(ls /tmp/skyscraper-integration-tests/items/onetime_spiders/example/ | wc -l)
 
-    #[ "$count" -eq 1 ]
-    [ 1 -eq 1 ]
+    [ "$count" -eq 1 ]
 }
