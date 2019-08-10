@@ -12,7 +12,7 @@ extras['all'] = [package for packages in extras.values()
 
 setup(
     name='skyscraper',
-    version='0.1.0',
+    version='0.1.1',
     description='Targeted Crawler/Scraper for molescrape.com',
     author='Stefan Koch',
     author_email='contact@molescrape.com',
@@ -36,5 +36,6 @@ setup(
         [console_scripts]
         skyscraper=skyscraper.commands:skyscraper_service
         skyscraper-spider=skyscraper.commands:skyscraper_spider
+        skyscraper-archive=skyscraper.commands:skyscraper_archive
     ''',
 )

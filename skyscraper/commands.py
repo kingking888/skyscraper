@@ -4,6 +4,7 @@ import time
 import logging
 import prometheus_client
 
+import skyscraper.archive
 import skyscraper.execution
 import skyscraper.git
 import skyscraper.mail
@@ -68,3 +69,19 @@ def skyscraper_spider(namespace, spider, use_tor):
     options = {'tor': True} if use_tor else {}
     runner = skyscraper.execution.SpiderRunner(proxy)
     runner.run(namespace, spider, semaphore=None, options=options)
+
+
+@click.command()
+def skyscraper_archive():
+    """Archive files from previous months into gzip files."""
+
+    root_folder = skyscraper.settings.SKYSCRAPER_STORAGE_FOLDER_PATH
+    for project in os.listdir(root_folder):
+        if os.path.isdir(os.path.join(root_folder, project)):
+            for spider in os.listdir(os.path.join(root_folder, project)):
+                if os.path.isdir(os.path.join(root_folder, project, spider)):
+                    click.echo('Archiving old files for {}/{}'.format(
+                        project, spider))
+
+                    skyscraper.archive.archive_old_files(
+                        os.path.join(root_folder, project, spider))

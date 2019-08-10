@@ -8,6 +8,8 @@ class Configuration(object):
         self.recurrence_minutes = None
         self.use_tor = False
         self.enabled = False
+        self.spider_type = 'custom'
+        self.spider_data = {}
 
     @classmethod
     def from_dict(cls, d):
@@ -21,6 +23,8 @@ class Configuration(object):
         c.recurrence_minutes = d.get('recurrence_minutes', None)
         c.use_tor = d.get('use_tor', False)
         c.enabled = d.get('enabled', False)
+        c.spider_type = d.get('spider_type', 'custom')
+        c.spider_data = d.get('spider_data', {})
 
         return c
 
