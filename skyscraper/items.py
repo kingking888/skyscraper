@@ -17,6 +17,7 @@ class BasicItem(scrapy.Item):
     slug = scrapy.Field()  # deprecated
     source = scrapy.Field()
     data = scrapy.Field()
+    downloads = scrapy.Field()
 
     # Automatically filled by pipeline
     crawl_time = scrapy.Field()
