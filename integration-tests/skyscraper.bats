@@ -29,3 +29,10 @@ teardown() {
 
     [ "$count" -eq 1 ]
 }
+
+@test "crawl example.com with Chrome headless from git" {
+    skyscraper-spider chrome_headless example
+    count=$(ls /tmp/skyscraper-integration-tests/items/chrome_headless/example/ | wc -l)
+
+    [ "$count" -eq 1 ]
+}

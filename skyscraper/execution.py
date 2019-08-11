@@ -152,6 +152,9 @@ class ScrapySpiderRunner(object):
 
 class ChromeSpiderRunner(object):
     def run_standalone(self, project, spider):
+        self.run(project, spider)
+
+    def run(self, project, spider):
         # TODO:
         # 1. load spider with spiderloader here
         # 2. read the start urls

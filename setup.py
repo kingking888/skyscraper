@@ -6,6 +6,7 @@ extras = {
     'aws': ['boto3'],
     'mqtt': ['paho-mqtt'],
     'redis': ['redis'],
+    'chrome': ['pyppeteer'],
 }
 extras['all'] = [package for packages in extras.values()
                  for package in packages]
@@ -24,7 +25,6 @@ setup(
     install_requires=[
         'python-dotenv',
         'scrapy',
-        'psycopg2-binary',
         'click',
         'pandas',
         'requests',

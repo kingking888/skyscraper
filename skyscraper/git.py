@@ -6,6 +6,7 @@ import scrapy
 import logging
 
 import skyscraper.config
+import skyscraper.spiders
 
 
 class RepositoryException(Exception):
@@ -62,9 +63,12 @@ class DeclarativeRepository(object):
         except FileNotFoundError:
             raise KeyError('Spider not found: {}/{}'.format(project, spider))
 
-        # extract the first class that is a child of scrapy.Spider
+        # extract the first class that is a child of skyscraper.spiders.ChromeSpider
+        # or scrapy.Spider
         for name, obj in inspect.getmembers(dynamicspider):
-            if inspect.isclass(obj) and issubclass(obj, scrapy.Spider):
+            if inspect.isclass(obj) \
+                    and (issubclass(obj, skyscraper.spiders.ChromeSpider) \
+                    or issubclass(obj, scrapy.Spider)):
                 if obj.name != spider:
                     logging.warn('Name attribute of spider {}/{} does not '
                                  + 'match its file name')

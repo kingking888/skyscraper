@@ -57,8 +57,9 @@ def skyscraper_service():
 @click.command()
 @click.argument('namespace')
 @click.argument('spider')
+@click.option('--engine', help='Select the engine to use for this spider')
 @click.option('--use-tor', is_flag=True, help='Use the TOR network')
-def skyscraper_spider(namespace, spider, use_tor):
+def skyscraper_spider(namespace, spider, engine, use_tor):
     """Perform a manual crawl. The user can define the name of the
     namespace and the spider that should be executed.
     """
@@ -69,8 +70,12 @@ def skyscraper_spider(namespace, spider, use_tor):
     click.echo('Executing spider %s/%s.' % (namespace, spider))
 
     options = {'tor': True} if use_tor else {}
-    runner = skyscraper.execution.ScrapySpiderRunner(proxy)
-    runner.run(namespace, spider, semaphore=None, options=options)
+    if engine == 'chrome':
+        runner = skyscraper.execution.ChromeSpiderRunner()
+        runner.run(namespace, spider)
+    else:
+        runner = skyscraper.execution.ScrapySpiderRunner(proxy)
+        runner.run(namespace, spider, semaphore=None, options=options)
 
 
 @click.command()
