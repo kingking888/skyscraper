@@ -5,6 +5,7 @@ class Configuration(object):
     def __init__(self, project, spider):
         self.project = project
         self.spider = spider
+        self.engine = 'scrapy'
         self.recurrence_minutes = None
         self.use_tor = False
         self.enabled = False
@@ -20,6 +21,7 @@ class Configuration(object):
 
         c = cls(d['project'], d['spider'])
 
+        c.engine = d.get('engine', 'scrapy')
         c.recurrence_minutes = d.get('recurrence_minutes', None)
         c.use_tor = d.get('use_tor', False)
         c.enabled = d.get('enabled', False)

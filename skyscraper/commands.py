@@ -32,8 +32,10 @@ def skyscraper_service():
         skyscraper.settings.GIT_SUBFOLDER,
         skyscraper.settings.GIT_BRANCH
     )
-    spider_runner = skyscraper.execution.SpiderRunner(proxy)
-    runner = skyscraper.execution.SkyscraperRunner(spider_runner)
+    spider_runners = {
+        'scrapy': skyscraper.execution.ScrapySpiderRunner(proxy),
+    }
+    runner = skyscraper.execution.SkyscraperRunner(spider_runners)
 
     try:
         while True:
@@ -67,7 +69,7 @@ def skyscraper_spider(namespace, spider, use_tor):
     click.echo('Executing spider %s/%s.' % (namespace, spider))
 
     options = {'tor': True} if use_tor else {}
-    runner = skyscraper.execution.SpiderRunner(proxy)
+    runner = skyscraper.execution.ScrapySpiderRunner(proxy)
     runner.run(namespace, spider, semaphore=None, options=options)
 
 

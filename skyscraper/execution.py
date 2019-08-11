@@ -16,11 +16,11 @@ SPIDERS_EXECUTED_COUNT = prometheus_client.Counter(
 
 
 class SkyscraperRunner(object):
-    def __init__(self, spider_runner):
+    def __init__(self, spider_runners):
         self.next_scheduled_runtimes = []
         self.spider_config = collections.defaultdict(dict)
 
-        self.spider_runner = spider_runner
+        self.spider_runners = spider_runners
 
     def update_spider_config(self, configs):
         for config in configs:
@@ -36,7 +36,7 @@ class SkyscraperRunner(object):
                 # over and over)
                 heapq.heappush(self.next_scheduled_runtimes,
                     (datetime.datetime.utcnow(),
-                    (config.project, config.spider)))
+                    (config.engine, config.project, config.spider)))
 
     def run_due_spiders(self):
         # heaps are sorted in python
@@ -45,12 +45,18 @@ class SkyscraperRunner(object):
                 and datetime.datetime.utcnow() > self.next_scheduled_runtimes[0][0]:
 
             item = heapq.heappop(self.next_scheduled_runtimes)
-            project, spider = item[1]
+            engine, project, spider = item[1]
 
             SPIDERS_EXECUTED_COUNT.inc()
-            self.spider_runner.run_standalone(project, spider)
+            runner = self.spider_runners.get(engine, None)
+            if not runner:
+                raise ValueError('Unknown scraping engine "{}"'.format(engine))
 
-            self._reschedule_spider(project, spider)
+            # TODO: This method should be called run(), but this will require
+            # some refactoring on the ScrapySpiderRunner
+            runner.run_standalone(project, spider)
+
+            self._reschedule_spider(engine, project, spider)
 
     def _has_new_config(self, project, spider, config):
         try:
@@ -60,7 +66,7 @@ class SkyscraperRunner(object):
             # does not exist yet = is new config
             return True
 
-    def _reschedule_spider(self, project, spider):
+    def _reschedule_spider(self, engine, project, spider):
         try:
             config = self.spider_config[project][spider]
 
@@ -73,13 +79,13 @@ class SkyscraperRunner(object):
                     + datetime.timedelta(minutes=config.recurrence_minutes)
                 heapq.heappush(
                     self.next_scheduled_runtimes,
-                    (next_runtime, (project, spider)))
+                    (next_runtime, (engine, project, spider)))
         except KeyError:
             # spider was removed, do not schedule again
             pass
 
 
-class SpiderRunner(object):
+class ScrapySpiderRunner(object):
     """This class is a runner to help with the execution of spiders with
     a given configuration. It sets up the environment and configurations
     and then executes the spider.
@@ -142,6 +148,16 @@ class SpiderRunner(object):
     def _release_run_lock(self, semaphore):
         if semaphore:
             semaphore.release()
+
+
+class ChromeSpiderRunner(object):
+    def run_standalone(self, project, spider):
+        # TODO:
+        # 1. load spider with spiderloader here
+        # 2. read the start urls
+        # 3. iterate start urls and emitted requests and run all emitted
+        #    BasicItems through the pipeline steps
+        pass
 
 
 class Semaphore(object):
