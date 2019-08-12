@@ -5,6 +5,7 @@ import heapq
 import collections
 import logging
 import prometheus_client
+import asyncio
 
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
@@ -151,16 +152,37 @@ class ScrapySpiderRunner(object):
 
 
 class ChromeSpiderRunner(object):
-    def run_standalone(self, project, spider):
-        self.run(project, spider)
+    def __init__(self, browser_future, spider_loader):
+        # TODO: Improve the async stuff, we actually only need sync
+        # execution
+        self.browser_future = browser_future
+        self.browser = None
+        self.spider_loader = spider_loader
 
-    def run(self, project, spider):
+    def run_standalone(self, project, spider):
+        asyncio.get_event_loop().run_until_complete(self.run(project, spider))
+
+    async def run(self, project, spider):
         # TODO:
         # 1. load spider with spiderloader here
         # 2. read the start urls
         # 3. iterate start urls and emitted requests and run all emitted
         #    BasicItems through the pipeline steps
-        pass
+        if not self.browser:
+            self.browser = await self.browser_future
+        spider_class = self.spider_loader.load(spider, namespace=project)
+        spider = spider_class()
+        frontier = spider.start_urls
+
+        for url in frontier:
+            page = await self.browser.newPage()
+            response = await page.goto(url)
+
+            res = await spider.parse(page, response)
+            print(res)
+
+    async def close(self):
+        await self.browser.close()
 
 
 class Semaphore(object):

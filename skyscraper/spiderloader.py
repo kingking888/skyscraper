@@ -18,9 +18,9 @@ from skyscraper.git import DeclarativeRepository
 class GitSpiderLoader(object):
     """Reads spiders from a git repository"""
 
-    def __init__(self, git_repo, namespace):
+    def __init__(self, git_repo, namespace=None):
         self.git_repo = git_repo
-        self.namespace = namespace
+        self.namespace_from_settings = namespace
 
     @classmethod
     def from_settings(cls, settings):
@@ -35,8 +35,11 @@ class GitSpiderLoader(object):
 
         return cls(git_repo, namespace)
 
-    def load(self, spider_name):
-        return self.git_repo.load_spider(self.namespace, spider_name)
+    def load(self, spider_name, namespace=None):
+        if namespace is None:
+            namespace = self.namespace_from_settings
+
+        return self.git_repo.load_spider(namespace, spider_name)
 
     def find_by_request(self, request):
         pass
