@@ -51,6 +51,11 @@ if os.environ.get('SKYSCRAPER_PIPELINE_USE_OUTPUT_FOLDER') \
     ITEM_PIPELINES['skyscraper.pipelines.filesystem.SaveDataToFolderPipeline'] = 300
     SKYSCRAPER_STORAGE_FOLDER_PATH = os.environ.get('SKYSCRAPER_STORAGE_FOLDER_PATH')
 
+if os.environ.get('SKYSCRAPER_CHROME_NO_SANDBOX'):
+    SKYSCRAPER_CHROME_NO_SANDBOX = bool(os.environ.get('SKYSCRAPER_CHROME_NO_SANDBOX'))
+else:
+    SKYSCRAPER_CHROME_NO_SANDBOX = False
+
 # Connection to AWS
 AWS_ACCESS_KEY = os.environ.get('SKYSCRAPER_AWS_ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = os.environ.get('SKYSCRAPER_AWS_SECRET_ACCESS_KEY')

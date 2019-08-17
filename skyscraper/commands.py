@@ -41,7 +41,10 @@ def skyscraper_service():
 
     settings = get_project_settings()
     pipelines = [_load_pipeline(p) for p in settings.get('ITEM_PIPELINES')]
-    browser = pyppeteer.launch()
+    if settings.get('SKYSCRAPER_CHROME_NO_SANDBOX'):
+        browser = pyppeteer.launch(args=['--no-sandbox'])
+    else:
+        browser = pyppeteer.launch()
     crawler = skyscraper.execution.ChromeCrawler(
         settings, browser)
 
@@ -100,7 +103,12 @@ def skyscraper_spider(namespace, spider, engine, use_tor):
             settings['USER_NAMESPACE'] = namespace
 
             pipelines = [_load_pipeline(p) for p in settings.get('ITEM_PIPELINES')]
-            browser = pyppeteer.launch()
+
+            if settings.get('SKYSCRAPER_CHROME_NO_SANDBOX'):
+                browser = pyppeteer.launch(args=['--no-sandbox'])
+            else:
+                browser = pyppeteer.launch()
+
             crawler = skyscraper.execution.ChromeCrawler(
                 settings, browser)
             runner = skyscraper.execution.ChromeSpiderRunner(
