@@ -4,7 +4,9 @@ import time
 import logging
 import prometheus_client
 import asyncio
+import importlib
 import pyppeteer
+from scrapy.utils.project import get_project_settings
 
 import skyscraper.archive
 import skyscraper.execution
@@ -37,11 +39,16 @@ def skyscraper_service():
     )
     spiderloader = skyscraper.spiderloader.GitSpiderLoader(repo)
 
+    settings = get_project_settings()
+    pipelines = [_load_pipeline(p) for p in settings.get('ITEM_PIPELINES')]
     browser = pyppeteer.launch()
+    crawler = skyscraper.execution.ChromeCrawler(
+        settings, browser)
+
     spider_runners = {
         'scrapy': skyscraper.execution.ScrapySpiderRunner(proxy),
         'chrome': skyscraper.execution.ChromeSpiderRunner(
-            browser, spiderloader),
+            crawler, spiderloader, pipelines),
     }
     runner = skyscraper.execution.SkyscraperRunner(spider_runners)
 
@@ -71,6 +78,7 @@ def skyscraper_spider(namespace, spider, engine, use_tor):
     """Perform a manual crawl. The user can define the name of the
     namespace and the spider that should be executed.
     """
+
     proxy = None
     if os.environ.get('SKYSCRAPER_TOR_PROXY'):
         proxy = os.environ.get('SKYSCRAPER_TOR_PROXY')
@@ -83,14 +91,20 @@ def skyscraper_spider(namespace, spider, engine, use_tor):
         skyscraper.settings.GIT_SUBFOLDER,
         skyscraper.settings.GIT_BRANCH
     )
-    spiderloader = skyscraper.spiderloader.GitSpiderLoader(repo)
+    spiderloader = skyscraper.spiderloader.GitSpiderLoader(repo, namespace)
 
     options = {'tor': True} if use_tor else {}
     if engine == 'chrome':
         async def run_chrome():
+            settings = get_project_settings()
+            settings['USER_NAMESPACE'] = namespace
+
+            pipelines = [_load_pipeline(p) for p in settings.get('ITEM_PIPELINES')]
             browser = pyppeteer.launch()
+            crawler = skyscraper.execution.ChromeCrawler(
+                settings, browser)
             runner = skyscraper.execution.ChromeSpiderRunner(
-                browser, spiderloader)
+                crawler, spiderloader, pipelines)
             await runner.run(namespace, spider)
             await runner.close()
 
@@ -114,3 +128,10 @@ def skyscraper_archive():
 
                     skyscraper.archive.archive_old_files(
                         os.path.join(root_folder, project, spider))
+
+
+def _load_pipeline(name):
+    module, _, class_ = name.rpartition('.')
+    mod = importlib.import_module(module)
+    cls = getattr(mod, class_)
+    return cls

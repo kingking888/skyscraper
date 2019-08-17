@@ -6,7 +6,9 @@ import collections
 import logging
 import prometheus_client
 import asyncio
+import scrapy
 
+from scrapy.exceptions import DropItem
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
@@ -151,18 +153,15 @@ class ScrapySpiderRunner(object):
             semaphore.release()
 
 
-class ChromeSpiderRunner(object):
-    def __init__(self, browser_future, spider_loader):
+class ChromeCrawler(object):
+    def __init__(self, settings, browser_future):
         # TODO: Improve the async stuff, we actually only need sync
         # execution
         self.browser_future = browser_future
         self.browser = None
-        self.spider_loader = spider_loader
+        self.settings = settings
 
-    def run_standalone(self, project, spider):
-        asyncio.get_event_loop().run_until_complete(self.run(project, spider))
-
-    async def run(self, project, spider):
+    async def crawl(self, spider):
         # TODO:
         # 1. load spider with spiderloader here
         # 2. read the start urls
@@ -170,8 +169,6 @@ class ChromeSpiderRunner(object):
         #    BasicItems through the pipeline steps
         if not self.browser:
             self.browser = await self.browser_future
-        spider_class = self.spider_loader.load(spider, namespace=project)
-        spider = spider_class()
         frontier = spider.start_urls
 
         for url in frontier:
@@ -179,10 +176,50 @@ class ChromeSpiderRunner(object):
             response = await page.goto(url)
 
             res = await spider.parse(page, response)
-            print(res)
+            if isinstance(res, scrapy.Item):
+                yield res
+            else:
+                for item in res:
+                    yield item
 
     async def close(self):
         await self.browser.close()
+
+
+class ChromeSpiderRunner(object):
+    def __init__(self, crawler, spider_loader, pipelines):
+        self.crawler = crawler
+        self.spider_loader = spider_loader
+        self.pipelines = pipelines
+
+    def run_standalone(self, project, spider):
+        asyncio.get_event_loop().run_until_complete(self.run(project, spider))
+
+    async def run(self, project, spider):
+        # TODO: Improve setting the namespace, should not have to be done
+        # during runtime of object
+        self.crawler.settings['USER_NAMESPACE'] = project
+
+        spider_class = self.spider_loader.load(spider, namespace=project)
+        spider = spider_class()
+
+        pipelines = [self._load_pipeline(p, self.crawler) for p in self.pipelines]
+        async for item in self.crawler.crawl(spider):
+            for pipeline in pipelines:
+                try:
+                    item = pipeline.process_item(item, spider)
+                except DropItem:
+                    # do not further process the item
+                    pass
+
+    async def close(self):
+        await self.crawler.close()
+
+    def _load_pipeline(self, pipeline_class, crawler):
+        if hasattr(pipeline_class, 'from_crawler'):
+            return pipeline_class.from_crawler(crawler)
+        else:
+            return pipeline_class()
 
 
 class Semaphore(object):
